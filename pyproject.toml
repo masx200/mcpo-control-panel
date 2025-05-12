@@ -7,7 +7,7 @@ backend-path = ["."]
 
 [project]
 name = "mcpo-control-panel" 
-version = "0.0.2"          
+version = "0.0.6"          
 description = "Web UI and API for managing MCP Orchestrator (mcpo) instances and configurations." 
 readme = "README.md"
 requires-python = ">=3.11" 
@@ -29,3 +29,6 @@ Repository = "https://github.com/daswer123/mcpo-control-panel"
 
 [tool.setuptools.packages.find]
 include = ["mcpo_control_panel*"]
+
+[tool.setuptools]
+include-package-data = true

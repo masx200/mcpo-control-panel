@@ -1,0 +1,3 @@
+graft mcpo_control_panel/ui/templates
+graft mcpo_control_panel/ui/static
+include mcpo_control_panel/py.typed

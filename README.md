@@ -1,3 +1,5 @@
+[English](README.md) | [Русский](README_RU.md)
+
 # MCPO Control Panel
 
 [![Python Version](https://img.shields.io/pypi/pyversions/mcpo-control-panel.svg)](https://pypi.org/project/mcpo-control-panel/)
@@ -60,17 +62,27 @@ https://github.com/user-attachments/assets/dc3f11de-82f6-42ee-a72f-7181c9af0f45
 
 ## Installation
 
+It's recommended to use `uv` for installation if available, as it's generally faster.
+
+### Method 1: Using uv (Recommended)
+
+```bash
+uv pip install mcpo-control-panel
+```
+
+### Method 2: Using pip (Traditional)
+
 ### Prerequisites
 
 *   Python 3.11 or higher.
 
-### Method 1: From PyPI (Recommended)
+### Method 3: From PyPI (using pip)
 
 ```bash
 pip install mcpo-control-panel
 ```
 
-### Method 2: From Source (for development)
+### Method 4: From Source (for development)
 
 1.  Clone the repository:
     ```bash
@@ -84,13 +96,15 @@ pip install mcpo-control-panel
 
 ## Running the Application
 
-Once installed, you can run the MCPO Control Panel using the following command:
+Once installed, you can run the MCPO Control Panel.
+
+**Using `python -m` (works with `pip` or `uv` installations):**
 
 ```bash
 python -m mcpo_control_panel [OPTIONS]
 ```
 
-Or, if you have the scripts directory of your Python environment in your PATH:
+**Using the installed script (if your Python scripts directory is in PATH):**
 
 ```bash
 mcpo-control-panel [OPTIONS]
@@ -113,6 +127,14 @@ mcpo-control-panel [OPTIONS]
 
 ```bash
 python -m mcpo_control_panel --port 8083 --reload --config-dir "/path/to/my/mcpo-data"
+```
+
+**Example using `uvx` (executes the command in an isolated environment with the specified package):**
+
+This is particularly useful for quick runs or testing without altering your global/current environment.
+
+```bash
+uvx --with mcpo-control-panel python -m mcpo_control_panel --host 0.0.0.0 --port 8934 --config-dir test
 ```
 
 Or using environment variables:
