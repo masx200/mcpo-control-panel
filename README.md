@@ -5,6 +5,19 @@
 
 A web-based control panel designed to simplify the management of [MCP Orchestrator (`mcpo`)](https://github.com/open-webui/mcpo) instances and their server configurations. It provides a user-friendly UI and an API for interacting with `mcpo`.
 
+## Demo
+
+https://github.com/user-attachments/assets/dc3f11de-82f6-42ee-a72f-7181c9af0f45
+
+![image](https://github.com/user-attachments/assets/64ad95ad-4ea8-44d8-a935-bac98b866760)
+
+![image](https://github.com/user-attachments/assets/49c22169-09b1-440b-a662-41b3f7f11ae9)
+
+![image](https://github.com/user-attachments/assets/6ee9aed8-ea60-48fa-adb6-e93066120bd7)
+
+![image](https://github.com/user-attachments/assets/9c82d141-e8cd-4dc5-890e-d271ddb94b77)
+
+
 ## Key Features
 
 *   **Server Definition Management:**
