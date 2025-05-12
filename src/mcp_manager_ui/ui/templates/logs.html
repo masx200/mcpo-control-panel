@@ -1,11 +1,8 @@
-<!-- ================================================ -->
-<!-- FILE: src/mcp_manager_ui/ui/templates/logs.html -->
-<!-- ================================================ -->
 {% extends "base.html" %}
 
-{% block title %}Логи MCPO - MCP Менеджер{% endblock %}
-{% block page_title %}Логи процесса MCPO{% endblock %}
-{% block page_subtitle %}Просмотр последних записей из файла логов mcpo{% endblock %}
+{% block title %}MCPO Logs - MCP Manager{% endblock %}
+{% block page_title %}MCPO Process Logs{% endblock %}
+{% block page_subtitle %}View the latest entries from the mcpo log file{% endblock %}
 
 {% block head_extra %}
 <style>
@@ -40,12 +37,12 @@
 
 {% block content %}
 
-{# Секция статуса MCPO #}
+{# MCPO Status Section #}
 <div class="row">
     <div class="col s12">
         <div class="card blue-grey lighten-5">
              <div class="card-content" style="padding-bottom: 10px;">
-                <span class="card-title blue-grey-text text-darken-3">Текущий статус MCPO</span>
+                <span class="card-title blue-grey-text text-darken-3">Current MCPO Status</span>
                 <div id="mcpo-status-indicator-logs"
                      hx-get="{{ url_for('get_mcpo_process_status_html') }}"
                      hx-trigger="load, every 5s"
@@ -53,39 +50,39 @@
                      hx-swap="innerHTML"
                      class="blue-grey-text text-darken-2"
                      style="min-height: 50px;">
-                    <p>Загрузка статуса...</p>
+                    <p>Loading status...</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-{# Секция логов #}
+{# Logs Section #}
 <div class="row">
     <div class="col s12">
         <div class="card">
             <div class="card-content">
-                <span class="card-title">Содержимое лог-файла</span>
+                <span class="card-title">Log File Contents</span>
                 <p class="grey-text text-darken-1">
-                    Путь к файлу:
+                    File path:
                     {% if mcpo_settings.log_file_path %}
                         <code>{{ mcpo_settings.log_file_path }}</code>
                         {% if log_file_path_exists %}
-                            <span class="green-text text-darken-1">(Файл найден)</span>
+                            <span class="green-text text-darken-1">(File found)</span>
                         {% else %}
-                            <span class="red-text text-darken-1">(Файл НЕ найден!)</span>
+                            <span class="red-text text-darken-1">(File NOT found!)</span>
                         {% endif %}
                     {% else %}
-                        <span class="orange-text text-darken-1">Путь к лог-файлу не настроен в <a href="{{ url_for('ui_edit_mcpo_settings_form') }}">настройках</a>.</span>
+                        <span class="orange-text text-darken-1">Log file path not configured in <a href="{{ url_for('ui_edit_mcpo_settings_form') }}">settings</a>.</span>
                     {% endif %}
                 </p>
                 {% if mcpo_settings.log_auto_refresh_enabled %}
                     <p class="grey-text text-darken-1" style="margin-bottom: 0;">
-                        Автообновление включено каждые <code>{{ mcpo_settings.log_auto_refresh_interval_seconds }}</code> секунд.
+                        Auto-refresh enabled every <code>{{ mcpo_settings.log_auto_refresh_interval_seconds }}</code> seconds.
                     </p>
                 {% else %}
                      <p class="grey-text text-darken-1" style="margin-bottom: 0;">
-                        Автообновление выключено. Нажмите "Обновить" для просмотра последних логов.
+                        Auto-refresh disabled. Click "Refresh" to view the latest logs.
                     </p>
                 {% endif %}
 
@@ -98,7 +95,7 @@
                               hx-trigger="load, {{ trigger_interval }}"
                               hx-target="this"
                               hx-swap="innerHTML"
-                              hx-indicator="#log-spinner">Загрузка логов...</code>
+                              hx-indicator="#log-spinner">Loading logs...</code>
                      </pre>
                     <div id="log-spinner" class="htmx-indicator center-align" style="margin-top: 10px;">
                         <div class="preloader-wrapper small active">
@@ -117,15 +114,15 @@
                          hx-target="#log-code-block"
                          hx-swap="innerHTML"
                          hx-indicator="#log-spinner">
-                     <i class="material-icons left">refresh</i>Обновить логи
+                     <i class="material-icons left">refresh</i>Refresh Logs
                  </button>
 
                  <div class="switch auto-scroll-switch">
                     <label class="blue-grey-text text-darken-2">
-                        Автопрокрутка Выкл.
+                        Auto-scroll Off
                         <input type="checkbox" id="auto-scroll-switch" checked>
                         <span class="lever"></span>
-                        Вкл.
+                        On
                     </label>
                 </div>
             </div>
@@ -133,42 +130,40 @@
     </div>
 </div>
 
-{% endblock %}
-
-{% block scripts %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const logContainer = document.getElementById('log-container');
-    const autoScrollSwitch = document.getElementById('auto-scroll-switch');
-    
-    if (!logContainer || !autoScrollSwitch) {
-        console.error("Не удалось найти необходимые элементы для автопрокрутки");
-        return;
-    }
-    
-    // Функция для прокрутки вниз
-    function scrollToBottom() {
-        if (autoScrollSwitch.checked) {
-            logContainer.scrollTop = logContainer.scrollHeight;
+    document.addEventListener('DOMContentLoaded', function() {
+        const logContainer = document.getElementById('log-container');
+        const autoScrollSwitch = document.getElementById('auto-scroll-switch');
+        
+        if (!logContainer || !autoScrollSwitch) {
+            console.error("Could not find required elements for auto-scrolling");
+            return;
         }
-    }
-    
-    // Обработчик события после обновления содержимого через HTMX
-    document.body.addEventListener('htmx:afterSwap', function(event) {
-        if (event.detail.target.id === 'log-code-block') {
-            setTimeout(scrollToBottom, 50);
+        
+        // Function to scroll to bottom
+        function scrollToBottom() {
+            if (autoScrollSwitch.checked) {
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
         }
+        
+        // Event handler after content update via HTMX
+        document.body.addEventListener('htmx:afterSwap', function(event) {
+            if (event.detail.target.id === 'log-code-block') {
+                setTimeout(scrollToBottom, 50);
+            }
+        });
+        
+        // Initial scroll
+        scrollToBottom();
+        
+        // Switch state change handler
+        autoScrollSwitch.addEventListener('change', function() {
+            if (autoScrollSwitch.checked) {
+                scrollToBottom();
+            }
+        });
     });
-    
-    // Начальная прокрутка
-    scrollToBottom();
-    
-    // Обработчик изменения состояния переключателя
-    autoScrollSwitch.addEventListener('change', function() {
-        if (autoScrollSwitch.checked) {
-            scrollToBottom();
-        }
-    });
-});
-</script>
+    </script>
+
 {% endblock %}

@@ -1,9 +1,8 @@
 # ================================================
 # FILE: src/mcp_manager_ui/api/server_crud.py
-# (Полная версия)
 # ================================================
 import logging
-from typing import Optional # Добавляем Optional
+from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, Response
 from sqlmodel import Session
@@ -13,15 +12,15 @@ from ..db.database import get_session
 from ..services import config_service
 from ..models.server_definition import ServerDefinitionRead
 
-# Настройка логгера
+# Logger setup
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# Переменная для шаблонов (устанавливается из main.py)
+# Templates variable (set from main.py)
 templates: Optional[Jinja2Templates] = None
 
-# --- API для HTMX взаимодействия с определениями серверов ---
+# --- API for HTMX interaction with server definitions ---
 
 @router.post("/{server_id}/toggle", response_class=HTMLResponse)
 async def toggle_server(
@@ -30,7 +29,7 @@ async def toggle_server(
     db: Session = Depends(get_session)
 ):
     """
-    Переключает флаг is_enabled для сервера и возвращает обновленную строку таблицы (HTML).
+    Toggles the is_enabled flag for a server and returns the updated table row (HTML).
     """
     logger.info(f"API Request: POST /api/servers/{server_id}/toggle")
     if not templates:
@@ -53,17 +52,17 @@ async def delete_server(
     db: Session = Depends(get_session)
 ):
     """
-    Удаляет определение сервера. Возвращает пустой ответ.
+    Deletes a server definition. Returns an empty response.
     """
     logger.info(f"API Request: DELETE /api/servers/{server_id}")
     deleted = config_service.delete_server_definition(db, server_id)
     if not deleted:
         raise HTTPException(status_code=404, detail="Server definition not found")
 
-    # Важно: Возвращаем пустой ответ, чтобы HTMX удалил элемент со страницы
+    # Important: Return an empty response so HTMX removes the element from the page
     return Response(status_code=200)
 
-# Функция для передачи шаблонов из main.py
+# Function to pass templates from main.py
 def set_templates_for_api(jinja_templates: Jinja2Templates):
     global templates
     templates = jinja_templates

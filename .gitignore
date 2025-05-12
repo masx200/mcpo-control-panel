@@ -7,3 +7,4 @@ mcpo_manager_settings.json
 mcpo_process.pid
 *.pyc
 uv.lock
+mcpo_manager_data

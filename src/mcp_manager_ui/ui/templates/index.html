@@ -1,112 +1,114 @@
 <!-- ================================================ -->
 <!-- FILE: src/mcp_manager_ui/ui/templates/index.html -->
-<!-- (Улучшенный дизайн + JS для тостов после редиректа) -->
+<!-- (Updated "Add Server(s)" button link and JS for toasts) -->
 <!-- ================================================ -->
 {% extends "base.html" %}
 
-{% block title %}Управление серверами - MCP Менеджер{% endblock %}
-{% block page_title %}Серверы и Управление MCPO{% endblock %}
-{% block page_subtitle %}Обзор определений MCP серверов и контроль процесса mcpo{% endblock %}
+{% block title %}Server Management - MCP Manager{% endblock %}
+{% block page_title %}Servers & MCPO Control{% endblock %}
+{% block page_subtitle %}Overview of MCP server definitions and mcpo process control{% endblock %}
 
 {% block head_extra %}
 <style>
-    /* ... (стили без изменений) ... */
-    /* Стили для улучшенной секции настроек */
+    /* Styles for improved settings section */
     .settings-dl dt {
         font-weight: 500;
         color: #546e7a; /* blue-grey darken-1 */
-        width: 160px; /* Фикс ширина для выравнивания */
+        width: 160px; /* Fixed width for alignment */
         float: left;
         clear: left;
         margin-right: 10px;
         text-align: right;
     }
     .settings-dl dd {
-        margin-left: 170px; /* Отступ = ширина dt + margin-right */
+        margin-left: 170px; /* Indent = dt width + margin-right */
         margin-bottom: 5px;
         color: #37474f; /* blue-grey darken-3 */
     }
-     .settings-dl dd code {
+    .settings-dl dd code {
         background-color: rgba(0,0,0,0.08);
         padding: 1px 5px;
         border-radius: 3px;
         font-size: 0.95em;
-     }
-    /* Доп стили для блока кнопок под конфигом */
+    }
+    /* Additional styles for the button block under the config */
     .config-actions {
         margin-top: 15px;
         display: flex;
-        flex-wrap: wrap; /* Перенос кнопок если не влезают */
-        gap: 10px; /* Пространство между кнопками */
+        flex-wrap: wrap; /* Wrap buttons if they don't fit */
+        gap: 10px; /* Space between buttons */
         align-items: center;
     }
-     .config-actions .btn-small {
-         margin-left: 0 !important; /* Убираем лишние отступы */
-     }
-      #config-code-block {
+    .config-actions .btn-small {
+         margin-left: 0 !important; /* Remove extra margins */
+    }
+    #config-code-block {
         display: block;
-        max-height: 45vh; /* Чуть больше места */
+        max-height: 45vh; /* Slightly more space */
         overflow-y: auto;
-        background-color: #37474f; /* Немного светлее */
+        background-color: #37474f; /* Slightly lighter */
         color: #eceff1;
         padding: 15px;
         border-radius: 4px;
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.9em;
-        border: 1px solid rgba(0,0,0,0.2); /* Легкая рамка */
+        border: 1px solid rgba(0,0,0,0.2); /* Light border */
+        white-space: pre-wrap; /* Ensure wrapping */
+        word-break: break-word; /* Break long words */
     }
-    /* Стиль для заголовка списка серверов */
+    /* Style for the server list header */
     .server-list-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 15px;
         padding-bottom: 10px;
-        border-bottom: 1px solid #cfd8dc; /* Разделитель */
+        border-bottom: 1px solid #cfd8dc; /* Separator */
     }
-     .server-list-header h5 {
+    .server-list-header h5 {
         margin: 0;
-     }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 
-<!-- Секция управления MCPO -->
-<!-- ... (без изменений) ... -->
+<!-- MCPO Control Section -->
 <div class="row">
     <div class="col s12">
-        <div class="card blue-grey lighten-4"> {# Немного темнее фон #}
-             <div class="card-content" style="padding-bottom: 10px;"> {# Уменьшен нижний padding #}
-                <span class="card-title blue-grey-text text-darken-3">Управление процессом MCPO</span>
+        <div class="card blue-grey lighten-4">
+             <div class="card-content" style="padding-bottom: 10px;">
+                <span class="card-title blue-grey-text text-darken-3">MCPO Process Management</span>
                 <div id="mcpo-status-block"
                      hx-get="{{ url_for('get_mcpo_process_status_html') }}"
-                     hx-trigger="load, every 5s"
+                     hx-trigger="load, every 5s" {# Trigger every 5 seconds to update status #}
                      hx-target="this"
                      hx-swap="innerHTML"
                      class="blue-grey-text text-darken-2"
-                     style="min-height: 50px;"> {# Минимальная высота для статуса #}
-                    <p>Загрузка статуса...</p>
+                     style="min-height: 50px;">
+                     {# Initial Loading State #}
+                     <div class="progress blue-grey lighten-3"><div class="indeterminate blue-grey"></div></div>
+                     <p>Loading status...</p>
                 </div>
             </div>
-            <div class="card-action" style="padding: 15px 24px;"> {# Немного больше padding #}
-                {# --- Кнопки управления --- #}
+            <div class="card-action" style="padding: 15px 24px;">
+                {# --- Control Buttons --- #}
                 <button hx-post="{{ url_for('start_mcpo_process') }}" hx-target="#mcpo-status-block" hx-swap="innerHTML" hx-indicator="#mcpo-spinner"
                         class="btn waves-effect waves-light green darken-1 tooltipped" style="margin-right: 8px;"
-                        data-position="top" data-tooltip="Запустить процесс mcpo с текущей конфигурацией">
-                    <i class="material-icons left">play_arrow</i>Запустить
+                        data-position="top" data-tooltip="Start the mcpo process with the current configuration">
+                    <i class="material-icons left">play_arrow</i>Start
                 </button>
                 <button hx-post="{{ url_for('stop_mcpo_process') }}" hx-target="#mcpo-status-block" hx-swap="innerHTML" hx-indicator="#mcpo-spinner"
                         class="btn waves-effect waves-light red darken-1 tooltipped" style="margin-right: 8px;"
-                        data-position="top" data-tooltip="Остановить запущенный процесс mcpo">
-                    <i class="material-icons left">stop</i>Остановить
+                        data-position="top" data-tooltip="Stop the running mcpo process">
+                    <i class="material-icons left">stop</i>Stop
                 </button>
                 <button hx-post="{{ url_for('restart_mcpo_process') }}" hx-target="#mcpo-status-block" hx-swap="innerHTML" hx-indicator="#mcpo-spinner"
                         class="btn waves-effect waves-light orange darken-1 tooltipped"
-                        data-position="top" data-tooltip="Сохранить текущие определения серверов в конфиг и перезапустить mcpo">
-                    <i class="material-icons left">refresh</i>Применить и Перезапустить
+                        data-position="top" data-tooltip="Save current server definitions to config and restart mcpo">
+                    <i class="material-icons left">refresh</i>Apply and Restart
                 </button>
-                {# --- Спиннер --- #}
+                {# --- Spinner --- #}
                 <div id="mcpo-spinner" class="htmx-indicator preloader-wrapper small active" style="vertical-align: middle; margin-left: 15px; width: 28px; height: 28px;">
                     <div class="spinner-layer spinner-blue-only">
                         <div class="circle-clipper left"><div class="circle"></div></div>
@@ -116,97 +118,96 @@
                 </div>
             </div>
 
-            <!-- Раскрывающиеся секции -->
-             <div class="card-content" style="padding-top: 0; background-color: #eceff1;"> {# Светлый фон для контраста #}
-                <ul class="collapsible" style="border: none; box-shadow: none;"> {# Убираем тени/границы у collapsible #}
-                     <li class="active"> {# Открываем настройки по умолчанию #}
-                        <div class="collapsible-header waves-effect waves-blue-grey"> {# Добавлен эффект волны #}
-                            <i class="material-icons">tune</i>Текущие настройки MCPO
-                            <a href="{{ url_for('ui_edit_mcpo_settings_form') }}" class="secondary-content tooltipped" data-position="top" data-tooltip="Редактировать настройки MCPO" onclick="event.stopPropagation();"> {# event.stopPropagation #}
+            <!-- Collapsible Sections -->
+             <div class="card-content" style="padding-top: 0; background-color: #eceff1;">
+                <ul class="collapsible" style="border: none; box-shadow: none;">
+                     {# Section 1: Current Settings #}
+                     <li class="active"> {# Start with settings open #}
+                        <div class="collapsible-header waves-effect waves-blue-grey">
+                            <i class="material-icons">tune</i>Current MCPO Settings
+                            <a href="{{ url_for('ui_edit_mcpo_settings_form') }}" class="secondary-content tooltipped" data-position="top" data-tooltip="Edit MCPO settings" onclick="event.stopPropagation();">
                                 <i class="material-icons blue-grey-text">edit</i>
                             </a>
                         </div>
                         <div class="collapsible-body" style="padding: 20px 25px; line-height: 1.7;">
-                            {# Используем Definition List (dl) для настроек #}
                             <dl class="settings-dl">
-                                <dt>Порт:</dt>
+                                <dt>Port:</dt>
                                 <dd><code>{{ mcpo_settings.port }}</code></dd>
-
-                                <dt>Публичный URL:</dt>
-                                <dd><code>{{ mcpo_settings.public_base_url if mcpo_settings.public_base_url else 'Не задан (используется http://127.0.0.1:port)' }}</code></dd>
-
-                                <dt>Исп. API ключ:</dt>
-                                <dd><code>{{ 'Да' if mcpo_settings.use_api_key else 'Нет' }}</code></dd>
-
+                                <dt>Public URL:</dt>
+                                <dd><code>{{ mcpo_settings.public_base_url if mcpo_settings.public_base_url else 'Not set (uses http://127.0.0.1:port)' }}</code></dd>
+                                <dt>Use API Key:</dt>
+                                <dd><code>{{ 'Yes' if mcpo_settings.use_api_key else 'No' }}</code></dd>
                                 {% if mcpo_settings.use_api_key %}
-                                <dt>API Ключ:</dt>
-                                <dd><code>{{ mcpo_settings.api_key if mcpo_settings.api_key else 'Не задан' }}</code></dd>
+                                <dt>API Key:</dt>
+                                <dd><code>{{ mcpo_settings.api_key if mcpo_settings.api_key else 'Not set' }}</code></dd>
                                 {% endif %}
-
-                                <dt>Путь к конфигу:</dt>
+                                <dt>Config Path:</dt>
                                 <dd><code>{{ mcpo_settings.config_file_path }}</code></dd>
-
-                                <dt>Путь к логам:</dt>
-                                <dd><code>{{ mcpo_settings.log_file_path if mcpo_settings.log_file_path else 'Не задан (логи в stdout/stderr)' }}</code></dd>
-
+                                <dt>Logs Path:</dt>
+                                <dd><code>{{ mcpo_settings.log_file_path if mcpo_settings.log_file_path else 'Not set (logs to stdout/stderr)' }}</code></dd>
                                 <dt>Health Check:</dt>
-                                <dd><code>{{ 'Включен' if mcpo_settings.health_check_enabled else 'Выключен' }}</code>
+                                <dd><code>{{ 'Enabled' if mcpo_settings.health_check_enabled else 'Disabled' }}</code>
                                     {% if mcpo_settings.health_check_enabled %}
-                                        (Интервал: {{mcpo_settings.health_check_interval_seconds}}с,
-                                        Попыток: {{mcpo_settings.health_check_failure_attempts}},
-                                        Авто-рестарт: {{'Вкл' if mcpo_settings.auto_restart_on_failure else 'Выкл'}})
+                                        (Interval: {{mcpo_settings.health_check_interval_seconds}}s,
+                                        Attempts: {{mcpo_settings.health_check_failure_attempts}},
+                                        Auto-Restart: {{'On' if mcpo_settings.auto_restart_on_failure else 'Off'}})
                                     {% endif %}
                                 </dd>
                              </dl>
                         </div>
                     </li>
-                    <li>
-                        <div class="collapsible-header waves-effect waves-blue-grey"> {# Добавлен эффект волны #}
-                            <i class="material-icons">visibility</i>Просмотр сгенерированного конфига
+                     {# Section 2: View Generated Config #}
+                     <li>
+                        <div class="collapsible-header waves-effect waves-blue-grey">
+                            <i class="material-icons">visibility</i>View Generated Config
                         </div>
                         <div class="collapsible-body" style="padding: 20px 25px;">
                             <p class="grey-text text-darken-1" style="margin-top: 0; margin-bottom: 10px; font-size: 0.9em;">
-                                Отображается актуальное содержимое файла конфигурации <code>{{ mcpo_settings.config_file_path }}</code>.
-                                Он генерируется при нажатии "Применить и Перезапустить".
+                                Displays the current content of the configuration file <code>{{ mcpo_settings.config_file_path }}</code>.
+                                It is generated when "Apply and Restart" is clicked.
                             </p>
-                             {# Контейнер для блока кода и индикатора #}
                             <div id="generated-config-container"
                                  hx-get="{{ url_for('get_generated_mcpo_config_content') }}"
-                                 hx-trigger="load" {# Загружаем при загрузке страницы #}
+                                 hx-trigger="load" {# Load config content on page load #}
                                  hx-target="#config-code-block"
-                                 hx-swap="innerHTML">
-                                <pre><code id="config-code-block">Загрузка содержимого конфигурации...</code></pre>
-                                <div class="htmx-indicator center-align" style="margin-top: 10px;"> {# Индикатор под блоком кода #}
+                                 hx-swap="innerHTML"
+                                 hx-indicator="#config-loading-indicator"> {# Indicate loading #}
+                                {# Pre block with code inside, target for HTMX swap #}
+                                <pre><code id="config-code-block">Loading configuration content...</code></pre>
+                                {# Loading indicator specific to this section #}
+                                <div id="config-loading-indicator" class="htmx-indicator center-align" style="margin-top: 10px;">
                                     <div class="preloader-wrapper small active"><div class="spinner-layer spinner-blue-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div></div>
                                 </div>
                             </div>
-                            {# Группа кнопок действий с конфигом #}
                             <div class="config-actions">
-                                <button class="btn-small waves-effect waves-light blue-grey darken-1 tooltipped"
-                                        data-position="top" data-tooltip="Скопировать содержимое в буфер обмена"
-                                        onclick="copyConfigToClipboard(this)"
+                                {# Copy Button - JS handled below #}
+                                <button id="copy-config-button"
+                                        class="btn-small waves-effect waves-light blue-grey darken-1 tooltipped"
+                                        data-position="top" data-tooltip="Copy content to clipboard"
                                         type="button">
-                                    <i class="material-icons left tiny">content_copy</i>Копировать
+                                    <i class="material-icons left tiny">content_copy</i>Copy
                                 </button>
+                                {# Refresh Button - uses HTMX #}
                                 <button class="btn-small waves-effect waves-light blue-grey darken-1 tooltipped"
-                                        data-position="top" data-tooltip="Обновить отображаемый конфиг"
+                                        data-position="top" data-tooltip="Refresh displayed config"
                                         hx-get="{{ url_for('get_generated_mcpo_config_content') }}"
                                         hx-target="#config-code-block"
                                         hx-swap="innerHTML"
-                                        hx-indicator="#generated-config-container .htmx-indicator">
-                                    <i class="material-icons left tiny">refresh</i>Обновить
+                                        hx-indicator="#config-loading-indicator"> {# Use same indicator #}
+                                    <i class="material-icons left tiny">refresh</i>Refresh
                                 </button>
+                                {# Download Links - standard HTML5 download #}
                                 <a href="{{ url_for('get_generated_mcpo_config_content') }}"
                                    download="{{ mcpo_settings.config_file_path.split('/')[-1].split('\\')[-1] or 'mcp_config.json' }}"
-                                   class="btn-small waves-effect waves-light teal darken-1 tooltipped" {# Цвет для скачивания #}
-                                   data-position="top" data-tooltip="Скачать стандартный файл конфигурации (Linux/Mac)">
-                                    <i class="material-icons left tiny">file_download</i>Скачать
+                                   class="btn-small waves-effect waves-light teal darken-1 tooltipped"
+                                   data-position="top" data-tooltip="Download standard configuration file (Linux/Mac)">
+                                    <i class="material-icons left tiny">file_download</i>Download
                                 </a>
                                 <a href="{{ url_for('get_generated_mcpo_config_content_windows') }}"
                                    download="mcp_config_windows.json"
-                                   class="btn-small waves-effect waves-light blue darken-1 tooltipped" {# Другой цвет #}
-                                   data-position="top" data-tooltip="Скачать файл конфигурации, адаптированный для Windows (пути)">
-                                    <i class="material-icons left tiny">downloading</i>Скачать (Win)
+                                   class="btn-small waves-effect waves-light blue darken-1 tooltipped"
+                                   data-position="top" data-tooltip="Download configuration file adapted for Windows (cmd /c ...)">
+                                    <i class="material-icons left tiny">downloading</i>Download (Win)
                                 </a>
                             </div>
                         </div>
@@ -217,33 +218,37 @@
     </div>
 </div>
 
-<!-- Секция списка серверов -->
+<!-- Server List Section -->
 <div class="row" style="margin-top: 30px;">
     <div class="col s12">
-        <div class="server-list-header"> {# Обертка для заголовка и кнопки #}
-             <h5 class="blue-grey-text text-darken-2">Определения серверов</h5>
-             <a href="{{ url_for('ui_bulk_add_form') }}" class="btn waves-effect waves-light blue darken-1 tooltipped" data-position="top" data-tooltip="Добавить один или несколько серверов">
-                 <i class="material-icons left">add_circle_outline</i>Добавить сервер(ы) {# Текст кнопки изменен #}
+        <div class="server-list-header">
+             <h5 class="blue-grey-text text-darken-2">Server Definitions</h5>
+             {# --- UPDATED LINK --- Points to the new add page #}
+             <a href="{{ url_for('ui_add_servers_form') }}" class="btn waves-effect waves-light blue darken-1 tooltipped" data-position="top" data-tooltip="Add one or more servers">
+                 <i class="material-icons left">add_circle_outline</i>Add Server(s)
              </a>
          </div>
-        <table class="highlight responsive-table card"> {# Добавлен класс card для обертки таблицы #}
-            <thead class="blue-grey lighten-5 black-text"> {# Заголовок таблицы выделен фоном #}
+        <table class="highlight responsive-table card">
+            <thead class="blue-grey lighten-5 black-text">
                 <tr>
-                    <th style="width: 5%; padding-left: 15px;">Вкл.</th> {# Добавлен padding #}
-                    <th>Имя</th>
-                    <th>Тип</th>
-                    <th>Детали</th>
-                    <th style="width: 15%; padding-right: 15px;">Действия</th> {# Добавлен padding #}
+                    <th style="width: 5%; padding-left: 15px;">On</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Details</th>
+                    <th style="width: 15%; padding-right: 15px;">Actions</th>
                 </tr>
             </thead>
             <tbody id="server-list-body">
+                {# Server rows loaded here, potentially via HTMX or server-side rendering #}
                 {% for server in server_definitions %}
-                    {% include "_server_row.html" %}
+                    {% include "_server_row.html" %} {# Include the partial for each server #}
                 {% else %}
+                    {# Message shown if no servers exist #}
                     <tr>
                         <td colspan="5" class="center-align grey-text" style="padding: 20px;">
-                            Определения серверов не найдены.
-                             <a href="{{ url_for('ui_bulk_add_form') }}">Добавить через JSON?</a>
+                            No server definitions found.
+                             {# --- UPDATED LINK --- Points to the new add page #}
+                             <a href="{{ url_for('ui_add_servers_form') }}">Add some?</a>
                         </td>
                     </tr>
                 {% endfor %}
@@ -252,88 +257,129 @@
     </div>
 </div>
 
-{% endblock %}
-
-{% block scripts %}
 <script>
-// Функция копирования конфига (без изменений)
-function copyConfigToClipboard(buttonElement) {
-    const codeBlock = document.getElementById('config-code-block');
-    if (!codeBlock) {
-        console.error("Элемент #config-code-block не найден");
-        M.toast({html: 'Ошибка: Не найден блок с кодом.', classes: 'red'});
-        return;
-    }
-    const configText = codeBlock.innerText || codeBlock.textContent;
-    const placeholderTexts = ['Загрузка содержимого конфигурации...', 'Ошибка получения конфигурации:'];
-    if (placeholderTexts.some(text => configText.startsWith(text)) || !configText.trim()) {
-         M.toast({html: 'Нельзя скопировать: Конфиг не загружен или пуст.', classes: 'orange'});
-         return;
-    }
-    if (!navigator.clipboard) {
-        M.toast({html: 'Копирование в буфер обмена не поддерживается.', classes: 'red'}); return;
-    }
-    navigator.clipboard.writeText(configText).then(() => {
-        M.toast({html: 'Конфиг скопирован!', classes: 'green', displayLength: 2000});
-        const icon = buttonElement.querySelector('i');
-        const originalText = buttonElement.textContent.replace(/check|content_copy/g, '').trim(); // Убираем иконки перед trim
-        const originalIcon = 'content_copy'; // Мы знаем, что исходная иконка такая
+    document.addEventListener('DOMContentLoaded', function() {
+        // console.log('DOMContentLoaded Index'); // Optional logging
 
-        buttonElement.innerHTML = `<i class="material-icons left tiny">check</i>Скопировано`;
-        buttonElement.disabled = true; // Блокируем кнопку временно
+        // --- Function to copy config ---
+        function copyToClipboard(buttonElement) {
+            const codeBlock = document.getElementById('config-code-block');
+            if (!codeBlock) {
+                console.error("Element #config-code-block not found");
+                M.toast({html: 'Error: Code block not found.', classes: 'red lighten-1'});
+                return;
+            }
+            const configText = codeBlock.innerText || codeBlock.textContent;
 
-        setTimeout(() => {
-             buttonElement.innerHTML = `<i class="material-icons left tiny">${originalIcon}</i> ${originalText}`;
-             buttonElement.disabled = false; // Разблокируем кнопку
-        }, 2000);
-    }).catch(err => {
-        console.error('Ошибка копирования: ', err);
-        M.toast({html: 'Не удалось скопировать.', classes: 'red'});
-    });
-}
+            // Check if the content is still the placeholder or an error message
+            const placeholderTexts = ['Loading configuration content...', 'Error getting standard config:', '// Error generating Windows config:'];
+            if (!configText || configText.trim() === '' || placeholderTexts.some(text => configText.includes(text))) {
+                 M.toast({html: 'Cannot copy: Config not loaded, empty, or contains an error.', classes: 'orange lighten-1'});
+                 return;
+            }
 
+            // Use Clipboard API
+            if (!navigator.clipboard) {
+                M.toast({html: 'Clipboard copy not supported by your browser.', classes: 'red lighten-1'});
+                return;
+            }
 
-// Инициализация Materialize и обработка тостов после редиректа
-document.addEventListener('DOMContentLoaded', function() {
-    // Инициализация Materialize компонентов
-    var elemsCollapsible = document.querySelectorAll('.collapsible');
-    M.Collapsible.init(elemsCollapsible);
+            navigator.clipboard.writeText(configText).then(() => {
+                M.toast({html: 'Config copied!', classes: 'green lighten-1', displayLength: 2000});
+                if (buttonElement) {
+                    // Visual feedback on the button
+                    const icon = buttonElement.querySelector('i');
+                    const originalText = 'Copy'; // Assume original text is just "Copy"
+                    const originalIcon = 'content_copy';
+                    buttonElement.innerHTML = `<i class="material-icons left tiny">check</i>Copied`;
+                    buttonElement.disabled = true; // Temporarily disable
+                    setTimeout(() => {
+                         buttonElement.innerHTML = `<i class="material-icons left tiny">${originalIcon}</i> ${originalText}`;
+                         buttonElement.disabled = false;
+                    }, 2000); // Reset after 2 seconds
+                }
+            }).catch(err => {
+                console.error('Clipboard copy error: ', err);
+                M.toast({html: 'Failed to copy config.', classes: 'red lighten-1'});
+            });
+        }
+        // --- End Copy Function ---
 
-    var elemsTooltip = document.querySelectorAll('.tooltipped');
-    M.Tooltip.init(elemsTooltip);
+        // --- Initialize Materialize components ---
+        // Use AutoInit first, then re-initialize specifics if needed
+        M.AutoInit();
+        var elemsCollapsible = document.querySelectorAll('.collapsible');
+        if (elemsCollapsible.length > 0) { M.Collapsible.init(elemsCollapsible); }
+        var elemsTooltip = document.querySelectorAll('.tooltipped');
+        if (elemsTooltip.length > 0) { M.Tooltip.init(elemsTooltip); }
+        // No selects on this page currently
 
-    // --- НОВЫЙ КОД: Проверка query params и показ тостов ---
-    const urlParams = new URLSearchParams(window.location.search);
-    const singleAddSuccess = urlParams.get('single_add_success');
-    const bulkSuccessCount = urlParams.get('bulk_success');
-    const updateSuccess = urlParams.get('update_success'); // Добавим и для обновления
+        // --- Attach Event Listener for Copy Button ---
+        const copyButton = document.getElementById('copy-config-button');
+        if (copyButton) {
+            copyButton.addEventListener('click', function() {
+                copyToClipboard(this);
+            });
+        } else {
+            console.warn("Copy button (#copy-config-button) not found on DOMContentLoaded.");
+        }
 
-    let toastShown = false; // Флаг, чтобы показать только один тост
+        // --- UPDATED Toast Logic ---
+        const urlParams = new URLSearchParams(window.location.search);
+        const singleAddSuccess = urlParams.get('single_add_success');
+        const bulkSuccess = urlParams.get('bulk_success'); // Could be count
+        const updateSuccess = urlParams.get('update_success');
+        const bulkError = urlParams.get('bulk_error'); // Error summary string
+        const bulkInfo = urlParams.get('bulk_info'); // Info string
 
-    if (singleAddSuccess) {
-        M.toast({html: `Сервер "${decodeURIComponent(singleAddSuccess)}" успешно добавлен!`, classes: 'green lighten-1', displayLength: 4000});
-        toastShown = true;
-    } else if (bulkSuccessCount) {
-        const count = parseInt(bulkSuccessCount, 10);
-        if (!isNaN(count) && count > 0) {
-             M.toast({html: `Успешно добавлено ${count} серверов из JSON!`, classes: 'green lighten-1', displayLength: 4000});
+        let toastShown = false; // Flag to prevent multiple toasts erasing the URL
+
+        if (singleAddSuccess) {
+            M.toast({html: `Server "${decodeURIComponent(singleAddSuccess)}" successfully added!`, classes: 'green lighten-1', displayLength: 4000});
+            toastShown = true;
+        } else if (bulkSuccess) { // Check bulk success first
+            const count = parseInt(bulkSuccess, 10);
+            if (!isNaN(count) && count > 0) {
+                 M.toast({html: `Successfully added ${count} servers from JSON!`, classes: 'green lighten-1', displayLength: 4000});
+                 toastShown = true;
+                 // Check if there was also a partial error message
+                 if (bulkError) {
+                     // Show a secondary, longer-lasting toast for the error part
+                     setTimeout(() => {
+                        M.toast({html: `Note: ${decodeURIComponent(bulkError)}`, classes: 'orange darken-1', displayLength: 6000});
+                     }, 500); // Delay slightly so it doesn't overlap too much
+                 }
+            } else if (!isNaN(count) && count === 0 && bulkError) {
+                 // Case: bulk add attempt resulted in 0 added servers *and* an error message
+                 M.toast({html: `Bulk Add Warning: ${decodeURIComponent(bulkError)}`, classes: 'orange darken-1', displayLength: 6000});
+                 toastShown = true;
+            } else {
+                // Generic bulk success message if count isn't parsed but param exists
+                M.toast({html: `Bulk operation completed.`, classes: 'green lighten-1', displayLength: 4000});
+                toastShown = true;
+            }
+        } else if (updateSuccess) {
+            M.toast({html: `Server "${decodeURIComponent(updateSuccess)}" successfully updated!`, classes: 'green lighten-1', displayLength: 4000});
+            toastShown = true;
+        } else if (bulkError) { // Handle bulk error only if no success message was generated
+            M.toast({html: `Bulk Add Error: ${decodeURIComponent(bulkError)}`, classes: 'red darken-1', displayLength: 6000});
+            toastShown = true;
+        } else if (bulkInfo) { // Handle bulk info only if nothing else was shown
+             M.toast({html: `Bulk Add Info: ${decodeURIComponent(bulkInfo)}`, classes: 'blue lighten-1 black-text', displayLength: 5000});
              toastShown = true;
         }
-    } else if (updateSuccess) {
-        M.toast({html: `Сервер "${decodeURIComponent(updateSuccess)}" успешно обновлен!`, classes: 'green lighten-1', displayLength: 4000});
-        toastShown = true;
-    }
 
-
-    // Удаляем query параметры из URL, если был показан тост
-    if (toastShown) {
-        // Используем history.replaceState для удаления параметров без перезагрузки
-        if (window.history.replaceState) {
+        // Remove query parameters from URL after processing toasts
+        if (toastShown && window.history.replaceState) {
             const cleanURL = window.location.protocol + "//" + window.location.host + window.location.pathname;
-            window.history.replaceState({path: cleanURL}, '', cleanURL);
+            // Use setTimeout to allow the toast animation to start before changing URL
+            setTimeout(() => {
+                 window.history.replaceState({ path: cleanURL }, '', cleanURL);
+            }, 100);
         }
-    }
-    // --- КОНЕЦ НОВОГО КОДА ---
-});
+        // --- END Toast Logic ---
+
+    }); // End DOMContentLoaded
 </script>
+
 {% endblock %}

@@ -1,51 +1,50 @@
 /* ================================================ */
 /* FILE: src/mcp_manager_ui/ui/static/css/style.css */
-/* (Очищено и готово для новых стилей)        */
 /* ================================================ */
 
-/* Базовые отступы и настройки для Materialize, если стандартных не хватает */
+/* Base spacing and settings for Materialize, when defaults are not enough */
 body {
   display: flex;
   min-height: 100vh;
   flex-direction: column;
-  background-color: #f4f4f8; /* Немного другой фон для контраста с карточками */
+  background-color: #f4f4f8; /* Slightly different background for contrast with cards */
 }
 
 main {
   flex: 1 0 auto;
-  padding-bottom: 20px; /* Отступ снизу для контента */
+  padding-bottom: 20px; /* Bottom padding for content */
 }
 
-/* Улучшение для Materialize preloader в htmx-indicator */
+/* Enhancement for Materialize preloader in htmx-indicator */
 .htmx-indicator.preloader-wrapper {
-  display: inline-block; /* По умолчанию HTMX может делать block */
+  display: inline-block; /* By default HTMX might make it block */
   opacity: 0;
   transition: opacity 200ms ease-in;
-  vertical-align: middle; /* Выравнивание по центру текста кнопки */
+  vertical-align: middle; /* Center alignment with button text */
 }
 .htmx-request .htmx-indicator.preloader-wrapper {
-opacity: 1;
+  opacity: 1;
 }
-.htmx-request.htmx-indicator.preloader-wrapper { /* Для элементов, которые сами являются индикаторами */
-opacity: 1;
+.htmx-request.htmx-indicator.preloader-wrapper { /* For elements that are indicators themselves */
+  opacity: 1;
 }
 
-/* Кастомизация для textarea в формах, чтобы helper-text был виден */
+/* Customization for textarea in forms to make helper-text visible */
 .input-field textarea + label {
-  width: calc(100% - 0.75rem); /* чтобы метка не наезжала на иконку */
+  width: calc(100% - 0.75rem); /* To prevent label from overlapping with icon */
 }
 .input-field textarea ~ .helper-text {
-  margin-bottom: 10px; /* Добавляем отступ снизу, если textarea последняя */
+  margin-bottom: 10px; /* Add bottom margin if textarea is the last element */
 }
 
-/* Мелкие иконки в тексте */
+/* Small icons in text */
 .material-icons.tiny {
-  font-size: 1rem; /* или 1.2rem */
-  vertical-align: text-bottom; /* или middle */
+  font-size: 1rem; /* or 1.2rem */
+  vertical-align: text-bottom; /* or middle */
   margin-right: 3px;
 }
 
-/* Для компактности карточек с настройками и логами */
+/* For compact cards with settings and logs */
 .card .card-content .collapsible {
   margin-top: 0;
   border: none;
@@ -54,47 +53,42 @@ opacity: 1;
 .card .card-content .collapsible-header {
   font-weight: 500;
   padding: 0.75rem;
-  background-color: rgba(0,0,0,0.03); /* Чуть темнее фон хедера */
+  background-color: rgba(0,0,0,0.03); /* Slightly darker header background */
 }
 .card .card-content .collapsible-body {
   padding: 1rem;
-  border-bottom: none; /* Убираем нижнюю границу у тела, т.к. она есть у элемента списка */
+  border-bottom: none; /* Remove bottom border from body as it exists on list item */
 }
 
-/* Более компактные collection-item для списка инструментов */
+/* More compact collection-item for tools list */
 .collection.with-header .collection-item {
-  padding: 10px 15px; /* Уменьшаем padding */
+  padding: 10px 15px; /* Reduce padding */
 }
 .collection.with-header .collection-item p {
-  margin: 5px 0 0 0; /* Уменьшаем отступы у параграфа с описанием */
+  margin: 5px 0 0 0; /* Reduce margins for description paragraph */
 }
 
-/* Фикс для sidenav trigger, чтобы он был видимым на фоне nav */
+/* Fix for sidenav trigger to make it visible against nav background */
 nav .sidenav-trigger i {
   color: white;
 }
 
 pre.log-container {
-  background-color: #263238; /* Темный фон Material Design (Blue Grey Darken 4) */
-  color: #eceff1; /* Светлый текст (Blue Grey Lighten 5) */
+  background-color: #263238; /* Dark Material Design background (Blue Grey Darken 4) */
+  color: #eceff1; /* Light text (Blue Grey Lighten 5) */
   padding: 15px;
   border-radius: 4px;
-  max-height: 60vh; /* Ограничиваем высоту, чтобы не занимало весь экран */
-  overflow-y: auto; /* Включаем вертикальную прокрутку */
-  font-family: 'Courier New', Courier, monospace; /* Моноширинный шрифт */
-  font-size: 0.9em; /* Немного уменьшим шрифт */
-  white-space: pre-wrap;   /* Сохраняет пробелы/переносы, но переносит длинные строки */
-  word-break: break-all;   /* Принудительный перенос очень длинных слов без пробелов */
-  border: 1px solid #37474f; /* Чуть более светлая граница (Blue Grey Darken 3) */
+  max-height: 60vh; /* Limit height to avoid taking up the entire screen */
+  overflow-y: auto; /* Enable vertical scrolling */
+  font-family: 'Courier New', Courier, monospace; /* Monospace font */
+  font-size: 0.9em; /* Slightly smaller font */
+  white-space: pre-wrap;   /* Preserves spaces/line breaks but wraps long lines */
+  word-break: break-all;   /* Forces very long words without spaces to break */
+  border: 1px solid #37474f; /* Slightly lighter border (Blue Grey Darken 3) */
 }
 
-/* Стиль для тега code внутри pre (обычно не нужен, т.к. pre наследует стили) */
+/* Style for code tag inside pre (usually not needed as pre inherits styles) */
 pre.log-container code {
-  display: block; /* Убедимся, что code занимает всю ширину pre */
-  /* Можно убрать фон/паддинг отсюда, если стилизуем pre */
-}
-
-/* Фикс для sidenav trigger, чтобы он был видимым на фоне nav */
-nav .sidenav-trigger i {
-color: white;
+  display: block; /* Ensure code takes full width of pre */
+  /* Can remove background/padding here if pre is styled */
 }

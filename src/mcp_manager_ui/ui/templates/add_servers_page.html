@@ -1,0 +1,247 @@
+<!-- ================================================ -->
+<!-- FILE: src/mcp_manager_ui/ui/templates/add_servers_page.html -->
+<!-- (Redesigned with Tabs for Single vs Bulk Add) -->
+<!-- ================================================ -->
+{% extends "base.html" %}
+
+{# Import the macro for the single server form #}
+{% from "_server_form_macro.html" import render_server_form %}
+
+{% block title %}Add Servers - MCP Manager{% endblock %}
+{% block page_title %}Add Server Definitions{% endblock %}
+{% block page_subtitle %}Add a single server via form or multiple servers from JSON{% endblock %}
+
+{% block head_extra %}
+<style>
+    /* Custom styles for tabs */
+    .tabs {
+        background-color: #f5f5f5; /* Light background for tab bar */
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .tabs .tab a {
+        color: #00796b; /* Teal darken-2 for active tab text */
+    }
+    .tabs .tab a:hover, .tabs .tab a.active {
+        color: #004d40; /* Teal darken-4 for hover/active */
+        background-color: #e0f2f1; /* Very light teal background */
+    }
+    .tabs .indicator {
+        background-color: #00796b; /* Teal indicator */
+    }
+    /* Ensure tab content has some padding */
+    .tab-content {
+        padding: 20px 10px; /* Add padding to tab content area */
+    }
+
+    /* Style for the bulk preview area */
+    #bulk-preview-area {
+        margin-top: 20px;
+        padding: 15px;
+        border: 1px dashed #bdbdbd; /* Dashed border */
+        background-color: #f9f9f9; /* Slightly different background */
+        border-radius: 4px;
+        min-height: 100px; /* Minimum height */
+        transition: border 0.3s ease, opacity 0.3s ease; /* Smooth transition */
+    }
+    /* Style during HTMX request */
+    #bulk-preview-area.htmx-request {
+         border-style: solid; /* Solid border during request */
+         border-color: #90a4ae; /* Blue-grey border */
+         opacity: 0.7;
+     }
+    /* Helper text positioning for textarea */
+    .input-field textarea ~ .helper-text {
+        margin-bottom: 10px;
+    }
+     /* Collapsible for JSON examples */
+    .collapsible.json-examples {
+        margin-top: 15px;
+        margin-bottom: 25px;
+        border: 1px solid #e0e0e0; /* Add border to collapsible */
+    }
+    .collapsible.json-examples .collapsible-header {
+        background-color: #fafafa; /* Lighter header */
+        border-bottom: 1px solid #e0e0e0;
+    }
+     .collapsible.json-examples .collapsible-body {
+        background-color: #fff; /* White body */
+        padding: 15px;
+     }
+    .collapsible.json-examples code {
+        display: block;
+        background: #f5f5f5;
+        padding: 10px;
+        border-radius: 3px;
+        font-size: 0.9em;
+    }
+    .collapsible.json-examples p {
+        margin-top: 0.5em;
+        margin-bottom: 0.3em;
+    }
+    .collapsible.json-examples ul {
+        margin-top: 0.5em;
+        padding-left: 25px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="row">
+    <div class="col s12">
+        <!-- Tabs structure -->
+        <ul class="tabs tabs-fixed-width z-depth-1">
+            {# Assign IDs to tabs for potential linking or state management #}
+            <li class="tab col s6"><a href="#tab-single-add" class="active">Add Single Server</a></li>
+            <li class="tab col s6"><a href="#tab-bulk-add">Bulk Add (JSON)</a></li>
+        </ul>
+    </div>
+
+    <!-- ==================== Tab Content: Add SINGLE server ==================== -->
+    <div id="tab-single-add" class="col s12 tab-content">
+        {% if single_server_error %}
+        <div class="card-panel red lighten-4 red-text text-darken-4" style="padding: 10px; margin-bottom: 15px;">
+             <i class="material-icons left tiny">error_outline</i><strong>Error adding server:</strong> {{ single_server_error }}
+        </div>
+        {% endif %}
+
+        <p class="grey-text text-darken-1" style="margin-bottom: 15px;"><i class="material-icons tiny left">info_outline</i>First select "Server type" to see the corresponding fields (Command/Arguments or URL).</p>
+
+        {# Render the form using the macro #}
+        {{ render_server_form(
+                action_url=single_add_action_url,
+                submit_button_text='Add This Server',
+                server=single_server_form_data,
+                error=None,
+                is_add_form=True,
+                request=request,
+                cancel_url=url_for('ui_root')
+           )
+        }}
+    </div>
+    <!-- ==================== End of Tab Content: Add SINGLE server ==================== -->
+
+
+    <!-- ==================== Tab Content: Bulk Add from JSON ==================== -->
+    <div id="tab-bulk-add" class="col s12 tab-content">
+
+         <!-- JSON format hint (Collapsible) -->
+         <ul class="collapsible json-examples">
+            <li>
+                <div class="collapsible-header"><i class="material-icons">info_outline</i>Valid JSON Format Examples</div>
+                <div class="collapsible-body">
+                     <p><strong>Format 1: Object with "mcpServers" key</strong></p>
+                    <pre><code>{
+  "mcpServers": {
+    "my-tool": { "command": "npx", "args": ["pkg", "--arg"] },
+    "sse-tool": { "type": "sse", "url": "http://..." }
+  }
+}</code></pre>
+                    <p><strong>Format 2: Direct mapping "name": {config}</strong></p>
+                    <pre><code>{
+  "tool-alpha": { "command": "uvx", "args": ["server-a"] },
+  "stream-beta": { "type": "streamable_http", "url": "http://..." }
+}</code></pre>
+                    <p><strong>Format 3: List of objects with "name" field</strong></p>
+                     <pre><code>[
+  { "name": "gamma", "command": "/bin/gamma", "args": ["--conf"] },
+  { "name": "delta", "type": "sse", "url": "https://..." }
+]</code></pre>
+                     <p><strong>Format 4: Single object with "name" field</strong> (Useful for single server import/export)</p>
+                     <pre><code>{
+  "name": "epsilon",
+  "command": "docker",
+  "args": ["run", "my-image"],
+  "env_vars": {"VAR": "value"},
+  "server_type": "stdio",
+  "is_enabled": false
+}</code></pre>
+                     <p><strong>Notes:</strong></p>
+                     <ul>
+                         <li>- Server names must be unique.</li>
+                         <li>- `command`/`args`/`env` are used for `stdio`. `url`/`type` for `sse`/`streamable_http`.</li>
+                         <li>- `env_vars` in Format 4 maps to `env` in generated config.</li>
+                         <li>- Windows commands (`cmd /c ...`) are adapted during analysis.</li>
+                         <li>- Extra fields are ignored.</li>
+                     </ul>
+                </div>
+            </li>
+        </ul>
+
+        <!-- Bulk Add Form (for Analysis) -->
+        <form id="bulk-analyze-form"
+              hx-post="{{ bulk_analyze_action_url }}"
+              hx-target="#bulk-preview-area"
+              hx-swap="innerHTML"
+              hx-indicator="#bulk-analyze-spinner"> {# Spinner displayed during analysis #}
+
+            <div class="row">
+                <div class="input-field col s12">
+                    <i class="material-icons prefix">data_object</i>
+                    <textarea id="configJsonStr" name="configJsonStr" class="materialize-textarea" style="height: 200px; font-family: monospace;" required placeholder='Paste your JSON here...'></textarea>
+                    <label for="configJsonStr">MCP Servers Configuration (JSON)</label>
+                     <span class="helper-text">Paste JSON content to analyze and preview before adding.</span>
+                </div>
+            </div>
+
+            {# Row for Analyze button, Spinner, and Enable Switch #}
+            <div class="row" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+                {# Analyze Button and Spinner #}
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <button class="btn waves-effect waves-light blue darken-1" type="submit">
+                        <i class="material-icons left">pageview</i>Analyze JSON
+                    </button>
+                     <div id="bulk-analyze-spinner" class="htmx-indicator preloader-wrapper small" style="opacity:0; transition: opacity 0.3s ease; width: 28px; height: 28px;"> {# Initially hidden #}
+                        <div class="spinner-layer spinner-blue-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div>
+                     </div>
+                </div>
+                {# Enable Switch #}
+                <div class="switch" style="padding-top: 5px;">
+                    <label>
+                        Add as disabled
+                        <input type="checkbox" id="default_enabled" name="default_enabled" value="true">
+                        <span class="lever"></span>
+                        Add as enabled
+                    </label>
+                </div>
+            </div>
+        </form> {# End of bulk analysis form #}
+
+        <!-- Preview Area (Target for HTMX) -->
+        <div id="bulk-preview-area">
+            {# Initial placeholder text #}
+            <p class="grey-text center-align" style="padding: 20px 0;">
+                Analysis results will appear here after you click "Analyze JSON".
+            </p>
+            {# The content from _bulk_add_preview.html will be loaded here #}
+         </div>
+
+    </div>
+     <!-- ==================== End of Tab Content: Bulk Add ==================== -->
+
+</div> {# End of .row containing tabs and content #}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Materialize Tabs
+        var tabs = document.querySelectorAll('.tabs');
+        if (tabs.length > 0) {
+            M.Tabs.init(tabs[0]); // Assuming only one set of tabs on the page
+        }
+
+        // Initialize Materialize Collapsible for JSON examples
+         var collapsibles = document.querySelectorAll('.collapsible');
+         if (collapsibles.length > 0) {
+             M.Collapsible.init(collapsibles);
+         }
+
+        // Initialize other components potentially used by the single-add form macro
+        var selects = document.querySelectorAll('select');
+        if (selects.length > 0) {
+            M.FormSelect.init(selects);
+        }
+        M.updateTextFields(); // Ensure labels float correctly if data is pre-filled (e.g., on error)
+    });
+</script>
+
+{% endblock %}

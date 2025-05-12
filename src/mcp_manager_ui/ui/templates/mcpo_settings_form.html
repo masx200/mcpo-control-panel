@@ -1,37 +1,36 @@
-<!-- src/mcp_manager_ui/ui/templates/mcpo_settings_form.html -->
 <!-- ================================================ -->
 <!-- FILE: src/mcp_manager_ui/ui/templates/mcpo_settings_form.html -->
-<!-- (Улучшенный дизайн и выравнивание) -->
+<!-- (Improved design and alignment) -->
 <!-- ================================================ -->
 {% extends "base.html" %}
 
-{% block title %}Настройки MCPO - MCP Менеджер{% endblock %}
-{% block page_title %}Настройки MCPO{% endblock %}
-{% block page_subtitle %}Конфигурация параметров запуска сервера mcpo и интерфейса менеджера{% endblock %}
+{% block title %}MCPO Settings - MCP Manager{% endblock %}
+{% block page_title %}MCPO Settings{% endblock %}
+{% block page_subtitle %}Configuration of mcpo server startup parameters and manager interface{% endblock %}
 
 {% block head_extra %}
 <style>
-    /* Улучшение вертикального выравнивания для switch рядом с input */
+    /* Improve vertical alignment for switch next to input */
     .input-field-with-switch {
         display: flex;
-        align-items: center; /* Выравниваем по центру */
-        flex-wrap: wrap; /* Позволяем перенос на мобильных */
+        align-items: center; /* Align vertically center */
+        flex-wrap: wrap; /* Allow wrapping on mobile */
     }
     .input-field-with-switch .input-part {
-        flex-grow: 1; /* Занимает доступное пространство */
-        min-width: 200px; /* Минимальная ширина для поля ввода */
-        margin-right: 20px; /* Отступ от переключателя */
+        flex-grow: 1; /* Takes available space */
+        min-width: 200px; /* Minimum width for input field */
+        margin-right: 20px; /* Margin from the switch */
     }
     .input-field-with-switch .switch-part {
-        flex-shrink: 0; /* Не сжимаем переключатель */
-        margin-top: 15px; /* Небольшой отступ сверху для выравнивания с input */
+        flex-shrink: 0; /* Don't shrink the switch */
+        margin-top: 15px; /* Small top margin for alignment with input */
     }
 
-    /* Выравнивание для главного переключателя (Health Check Enable) */
+    /* Alignment for the main switch (Health Check Enable) */
      .main-switch-row {
         display: flex;
         align-items: center;
-        margin-bottom: 15px; /* Отступ снизу */
+        margin-bottom: 15px; /* Bottom margin */
      }
      .main-switch-row .switch {
         margin-right: 15px;
@@ -42,24 +41,24 @@
          flex-grow: 1;
       }
 
-    /* Уменьшение отступа снизу для .row внутри карточек */
+    /* Reduce bottom margin for .row inside cards */
     .card-content .row {
         margin-bottom: 10px;
     }
      .card-content .row:last-child {
         margin-bottom: 0;
     }
-    /* Доп. отступ для helper-text, чтобы он не прилипал */
+    /* Additional margin for helper-text to avoid sticking */
     .input-field .helper-text {
         margin-top: 2px;
     }
-    /* Стили для инфо-блока в Health Check */
+    /* Styles for the info block in Health Check */
     .health-check-info {
         margin-top: 20px;
         padding: 10px 12px;
         background-color: rgba(0,0,0, 0.1);
         border-radius: 3px;
-        border-left: 3px solid #607d8b; /* Акцент */
+        border-left: 3px solid #607d8b; /* Accent */
         font-size: 0.85rem;
     }
      .health-check-info i {
@@ -71,7 +70,7 @@
          background-color: rgba(255, 255, 255, 0.1);
          padding: 1px 4px;
          border-radius: 2px;
-         font-size: 1em; /* Немного больше */
+         font-size: 1em; /* Slightly larger */
      }
 </style>
 {% endblock %}
@@ -81,51 +80,51 @@
 
 {% if error %}
 <div class="card-panel red lighten-3 black-text">
-    <strong><i class="material-icons left tiny">error_outline</i>Ошибка:</strong> {{ error }}
+    <strong><i class="material-icons left tiny">error_outline</i>Error:</strong> {{ error }}
 </div>
 {% endif %}
 
 {% if success %}
 <div class="card-panel green lighten-3 black-text">
-    <strong><i class="material-icons left tiny">check_circle_outline</i>Успешно:</strong> {{ success }}
+    <strong><i class="material-icons left tiny">check_circle_outline</i>Success:</strong> {{ success }}
 </div>
 {% endif %}
 
 <div class="row">
     <form class="col s12" method="post" action="{{ url_for('ui_update_mcpo_settings') }}">
-        <!-- Основные настройки MCPO -->
+        <!-- Core MCPO Settings -->
         <div class="card">
             <div class="card-content">
-                <span class="card-title grey-text text-darken-1" style="margin-bottom: 20px;">Основные настройки MCPO</span>
+                <span class="card-title grey-text text-darken-1" style="margin-bottom: 20px;">Core MCPO Settings</span>
                 <div class="row">
                     <div class="input-field col s12 m6">
                         <i class="material-icons prefix">settings_input_antenna</i>
                         <input type="number" id="port" name="port" value="{{ settings.port if settings else 8000 }}" required min="1024" max="65535" class="validate">
-                        <label for="port">Порт MCPO (локальный)</label>
-                        <span class="helper-text">Порт для запуска сервера mcpo на этой машине (1024-65535).</span>
+                        <label for="port">MCPO Port (local)</label>
+                        <span class="helper-text">Port for running the mcpo server on this machine (1024-65535).</span>
                     </div>
                     <div class="input-field col s12 m6">
                         <i class="material-icons prefix">public</i>
-                        <input type="url" id="public_base_url" name="public_base_url" value="{{ settings.public_base_url if settings and settings.public_base_url is not none else '' }}" placeholder="Напр., http://your.domain.com:8000">
-                        <label for="public_base_url">Публичный базовый URL (опционально)</label>
-                        <span class="helper-text">URL для внешних ссылок. Если пусто, используется http://127.0.0.1:PORT.</span>
+                        <input type="url" id="public_base_url" name="public_base_url" value="{{ settings.public_base_url if settings and settings.public_base_url is not none else '' }}" placeholder="e.g., http://your.domain.com:8000">
+                        <label for="public_base_url">Public Base URL (optional)</label>
+                        <span class="helper-text">URL for external links. If empty, http://127.0.0.1:PORT is used.</span>
                     </div>
                 </div>
                 {# API Key + Switch #}
                 <div class="row input-field-with-switch">
-                     <div class="input-field input-part col s12 m8"> {# Используем m8 для поля ввода #}
+                     <div class="input-field input-part col s12 m8"> {# Using m8 for the input field #}
                         <i class="material-icons prefix">key</i>
                         <input type="text" id="api_key" name="api_key" value="{{ settings.api_key if settings and settings.api_key is not none else '' }}">
-                        <label for="api_key">API Ключ MCPO (опционально)</label>
-                         <span class="helper-text">Ключ для защиты эндпоинтов (Bearer token).</span>
+                        <label for="api_key">MCPO API Key (optional)</label>
+                         <span class="helper-text">Key for protecting endpoints (Bearer token).</span>
                     </div>
-                    <div class="switch-part col s12 m4"> {# Используем m4 для переключателя #}
+                    <div class="switch-part col s12 m4"> {# Using m4 for the switch #}
                          <div class="switch">
                             <label>
-                                Выкл.
+                                Off
                                 <input type="checkbox" id="use_api_key" name="use_api_key" value="true" {% if settings and settings.use_api_key %}checked{% endif %}>
                                 <span class="lever"></span>
-                                Вкл. API ключ
+                                Use API Key
                             </label>
                         </div>
                     </div>
@@ -135,8 +134,8 @@
                     <div class="input-field col s12">
                         <i class="material-icons prefix">description</i>
                         <input type="text" id="config_file_path" name="config_file_path" value="{{ settings.config_file_path if settings else 'mcp_generated_config.json' }}" required class="validate">
-                        <label for="config_file_path">Путь к файлу конфигурации MCPO</label>
-                        <span class="helper-text">Файл, который будет генерироваться для запуска mcpo.</span>
+                        <label for="config_file_path">MCPO Configuration File Path</label>
+                        <span class="helper-text">The file that will be generated to run mcpo.</span>
                     </div>
                 </div>
                  {# Log File Path #}
@@ -144,35 +143,35 @@
                     <div class="input-field col s12">
                         <i class="material-icons prefix">assignment</i>
                         <input type="text" id="log_file_path" name="log_file_path" value="{{ settings.log_file_path if settings and settings.log_file_path is not none else '' }}">
-                        <label for="log_file_path">Путь к лог-файлу MCPO (опционально)</label>
-                        <span class="helper-text">Файл для записи логов процесса mcpo. Если пусто, логи идут в stdout/stderr.</span>
+                        <label for="log_file_path">MCPO Log File Path (optional)</label>
+                        <span class="helper-text">File for writing mcpo process logs. If empty, logs go to stdout/stderr.</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Настройки отображения логов -->
+        <!-- Log Display Settings -->
         <div class="card" style="margin-top: 20px;">
              <div class="card-content">
-                <span class="card-title grey-text text-darken-1" style="margin-bottom: 20px;">Отображение логов в Менеджере</span>
+                <span class="card-title grey-text text-darken-1" style="margin-bottom: 20px;">Log Display in Manager</span>
                  {# Log Refresh Interval + Switch #}
                  <div class="row input-field-with-switch">
-                    <div class="input-field input-part col s12 m7"> {# Используем m7 для поля ввода #}
+                    <div class="input-field input-part col s12 m7"> {# Using m7 for the input field #}
                         <i class="material-icons prefix">timer</i>
                         <input type="number" id="log_auto_refresh_interval_seconds" name="log_auto_refresh_interval_seconds"
                                value="{{ settings.log_auto_refresh_interval_seconds if settings else 180 }}"
                                required min="5" max="3600" class="validate">
-                        <label for="log_auto_refresh_interval_seconds">Интервал автообновления (сек)</label>
-                        <span class="helper-text">Как часто обновлять логи на странице логов (5-3600 сек).</span>
+                        <label for="log_auto_refresh_interval_seconds">Auto-Refresh Interval (sec)</label>
+                        <span class="helper-text">How often to refresh logs on the logs page (5-3600 sec).</span>
                     </div>
-                     <div class="switch-part col s12 m5"> {# Используем m5 для переключателя #}
+                     <div class="switch-part col s12 m5"> {# Using m5 for the switch #}
                          <div class="switch">
                             <label>
-                                Автообновление выкл.
+                                Auto-Refresh Off
                                 <input type="checkbox" id="log_auto_refresh_enabled" name="log_auto_refresh_enabled"
                                        value="true" {% if settings and settings.log_auto_refresh_enabled %}checked{% endif %}>
                                 <span class="lever"></span>
-                                Автообновление вкл.
+                                Auto-Refresh On
                             </label>
                         </div>
                     </div>
@@ -180,23 +179,23 @@
             </div>
         </div>
 
-        <!-- Настройки Health Check -->
+        <!-- Health Check Settings -->
         <div class="card" style="margin-top: 20px;">
             <div class="card-content">
-                <span class="card-title grey-text text-darken-1" style="margin-bottom: 20px;">Проверка работоспособности и Авто-рестарт MCPO</span>
+                <span class="card-title grey-text text-darken-1" style="margin-bottom: 20px;">MCPO Health Check & Auto-Restart</span>
                  {# Main Health Check Enable Switch + Description #}
                  <div class="row main-switch-row">
                      <div class="switch">
                         <label>
-                            Выкл.
+                            Off
                             <input type="checkbox" id="health_check_enabled" name="health_check_enabled"
                                    value="true" {% if settings and settings.health_check_enabled %}checked{% endif %}>
                             <span class="lever"></span>
-                            Вкл.
+                            On
                         </label>
                     </div>
                      <p class="caption grey-text text-darken-1">
-                         Включить периодическую проверку доступности MCPO через эхо-запрос.
+                         Enable periodic checking of MCPO availability via an echo request.
                      </p>
                 </div>
                 {# Interval + Failure Attempts #}
@@ -206,148 +205,144 @@
                         <input type="number" id="health_check_interval_seconds" name="health_check_interval_seconds"
                                value="{{ settings.health_check_interval_seconds if settings else 10 }}"
                                required min="5" class="validate">
-                        <label for="health_check_interval_seconds">Интервал проверки (сек)</label>
-                        <span class="helper-text">Частота проверок при успехе (минимум 5 сек).</span>
+                        <label for="health_check_interval_seconds">Check Interval (sec)</label>
+                        <span class="helper-text">Check frequency on success (minimum 5 sec).</span>
                     </div>
                     <div class="input-field col s12 m6">
-                        <i class="material-icons prefix">error_outline</i> {# Иконка изменена #}
+                        <i class="material-icons prefix">error_outline</i> {# Changed icon #}
                         <input type="number" id="health_check_failure_attempts" name="health_check_failure_attempts"
                                value="{{ settings.health_check_failure_attempts if settings else 3 }}"
                                required min="1" class="validate">
-                        <label for="health_check_failure_attempts">Попыток перед рестартом</label>
-                        <span class="helper-text">Неудач подряд перед рестартом (минимум 1).</span>
+                        <label for="health_check_failure_attempts">Attempts Before Restart</label>
+                        <span class="helper-text">Consecutive failures before restart (minimum 1).</span>
                     </div>
                 </div>
                 {# Failure Delay + Auto-Restart Switch #}
                 <div class="row input-field-with-switch">
-                    <div class="input-field input-part col s12 m7"> {# Используем m7 для поля ввода #}
-                        <i class="material-icons prefix">replay</i> {# Иконка изменена #}
+                    <div class="input-field input-part col s12 m7"> {# Using m7 for the input field #}
+                        <i class="material-icons prefix">replay</i> {# Changed icon #}
                         <input type="number" id="health_check_failure_retry_delay_seconds" name="health_check_failure_retry_delay_seconds"
                                value="{{ settings.health_check_failure_retry_delay_seconds if settings else 5 }}"
                                required min="1" class="validate">
-                        <label for="health_check_failure_retry_delay_seconds">Задержка при неудаче (сек)</label>
-                        <span class="helper-text">Пауза между неудачными проверками (минимум 1 сек).</span>
+                        <label for="health_check_failure_retry_delay_seconds">Delay on Failure (sec)</label>
+                        <span class="helper-text">Pause between failed checks (minimum 1 sec).</span>
                     </div>
-                     <div class="switch-part col s12 m5"> {# Используем m5 для переключателя #}
+                     <div class="switch-part col s12 m5"> {# Using m5 for the switch #}
                          <div class="switch">
                             <label>
-                                Рестарт выкл.
+                                Restart Off
                                 <input type="checkbox" id="auto_restart_on_failure" name="auto_restart_on_failure"
                                        value="true" {% if settings and settings.auto_restart_on_failure %}checked{% endif %}>
                                 <span class="lever"></span>
-                                Авто-рестарт вкл.
+                                Auto-Restart On
                             </label>
                         </div>
-                         {# Маленькое описание можно добавить здесь или оставить как есть #}
+                         {# A small description can be added here or left as is #}
                          <p class="caption grey-text text-darken-1" style="font-size:0.8rem; margin-top: 5px;">
-                             Перезапускать mcpo при сбое проверок.
+                             Restart mcpo if checks fail.
                          </p>
                     </div>
                 </div>
                 {# Info Block #}
                 <div class="health-check-info grey-text text-lighten-1">
                     <i class="material-icons tiny">info_outline</i>
-                    <span>Для проверки используется встроенный эхо-сервер <code>{{ settings.INTERNAL_ECHO_SERVER_NAME }}</code>. Он добавляется в конфигурацию, если проверка включена. Команда: <code>{{ settings.INTERNAL_ECHO_SERVER_COMMAND }} {{ ' '.join(settings.INTERNAL_ECHO_SERVER_ARGS) }}</code>.</span>
+                    <span>The check uses the built-in echo server <code>{{ settings.INTERNAL_ECHO_SERVER_NAME }}</code>. It is added to the configuration if the check is enabled. Command: <code>{{ settings.INTERNAL_ECHO_SERVER_COMMAND }} {{ ' '.join(settings.INTERNAL_ECHO_SERVER_ARGS) }}</code>.</span>
                 </div>
             </div>
         </div>
 
-        <!-- Кнопки Сохранить/Отмена -->
+        <!-- Save/Cancel Buttons -->
         <div class="row" style="margin-top: 30px;">
             <div class="col s12">
                  <button class="btn waves-effect waves-light blue darken-1" type="submit" style="margin-right: 10px;">
-                     <i class="material-icons left">save</i>Сохранить все настройки
+                     <i class="material-icons left">save</i>Save All Settings
                  </button>
                  <a href="{{ url_for('ui_root') }}" class="btn waves-effect waves-light grey lighten-1 black-text">
-                      <i class="material-icons left">cancel</i>Отмена
+                      <i class="material-icons left">cancel</i>Cancel
                  </a>
             </div>
         </div>
     </form>
 </div>
-{% endblock %}
 
-{% block scripts %}
-{# Можно добавить JS для динамического вкл/выкл полей HealthCheck при изменении главного свитча #}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Инициализация Materialize компонентов (если нужны, например, Select)
-    // M.FormSelect.init(document.querySelectorAll('select'));
-
-    // Пример: Динамическое вкл/выкл полей Health Check
-    const healthCheckEnabledSwitch = document.getElementById('health_check_enabled');
-    const healthCheckFields = [
-        document.getElementById('health_check_interval_seconds'),
-        document.getElementById('health_check_failure_attempts'),
-        document.getElementById('health_check_failure_retry_delay_seconds'),
-        document.getElementById('auto_restart_on_failure')
-    ];
-
-    function toggleHealthCheckFields() {
-        const isDisabled = !healthCheckEnabledSwitch.checked;
-        healthCheckFields.forEach(field => {
-            if (field) {
-                field.disabled = isDisabled;
-                // Дополнительно можно добавить/удалить класс для визуального отображения неактивности
-                const parentWrapper = field.closest('.input-field') || field.closest('.switch-part');
-                 if (parentWrapper) {
-                     parentWrapper.style.opacity = isDisabled ? 0.6 : 1;
-                 }
-                 // Для switch нужно также дизейблить сам input внутри label
-                 if (field.type === 'checkbox' && field.parentNode.classList.contains('switch')) {
-                     const switchInput = field.parentNode.querySelector('input[type="checkbox"]');
-                     if(switchInput) switchInput.disabled = isDisabled;
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize Materialize components (if needed, e.g., Select)
+        // M.FormSelect.init(document.querySelectorAll('select'));
+    
+        // Example: Dynamically enable/disable Health Check fields
+        const healthCheckEnabledSwitch = document.getElementById('health_check_enabled');
+        const healthCheckFields = [
+            document.getElementById('health_check_interval_seconds'),
+            document.getElementById('health_check_failure_attempts'),
+            document.getElementById('health_check_failure_retry_delay_seconds'),
+            document.getElementById('auto_restart_on_failure') // Target the checkbox itself for the switch
+        ];
+    
+        function toggleHealthCheckFields() {
+            const isDisabled = !healthCheckEnabledSwitch.checked;
+            healthCheckFields.forEach(field => {
+                if (field) {
+                    field.disabled = isDisabled;
+                    // Optionally add/remove a class for visual indication of inactivity
+                    const parentWrapper = field.closest('.input-field') || field.closest('.switch-part');
+                     if (parentWrapper) {
+                         parentWrapper.style.opacity = isDisabled ? 0.6 : 1;
+                     }
+                     // For switches, specifically disable the input inside the label
+                     if (field.type === 'checkbox') {
+                         field.disabled = isDisabled; // Disable the checkbox input directly
+                     }
+                }
+            });
+             // Update Materialize state (if Select or other components were used)
+             // M.updateTextFields();
+        }
+    
+        if (healthCheckEnabledSwitch) {
+            healthCheckEnabledSwitch.addEventListener('change', toggleHealthCheckFields);
+            // Set initial state on page load
+            toggleHealthCheckFields();
+        }
+    
+        // --- Similar logic for API Key ---
+        const useApiKeySwitch = document.getElementById('use_api_key');
+        const apiKeyInput = document.getElementById('api_key');
+    
+        function toggleApiKeyInput() {
+            if (apiKeyInput) {
+                apiKeyInput.disabled = !useApiKeySwitch.checked;
+                const parentWrapper = apiKeyInput.closest('.input-field');
+                if (parentWrapper) {
+                     parentWrapper.style.opacity = apiKeyInput.disabled ? 0.6 : 1;
                  }
             }
-        });
-         // Обновление состояния Materialize (если бы были Select или другие компоненты)
-         // M.updateTextFields();
-    }
-
-    if (healthCheckEnabledSwitch) {
-        healthCheckEnabledSwitch.addEventListener('change', toggleHealthCheckFields);
-        // Первоначальная установка состояния при загрузке страницы
-        toggleHealthCheckFields();
-    }
-
-    // --- Аналогично можно сделать для API Key ---
-    const useApiKeySwitch = document.getElementById('use_api_key');
-    const apiKeyInput = document.getElementById('api_key');
-
-    function toggleApiKeyInput() {
-        if (apiKeyInput) {
-            apiKeyInput.disabled = !useApiKeySwitch.checked;
-            const parentWrapper = apiKeyInput.closest('.input-field');
-            if (parentWrapper) {
-                 parentWrapper.style.opacity = apiKeyInput.disabled ? 0.6 : 1;
-             }
         }
-    }
-
-     if (useApiKeySwitch) {
-        useApiKeySwitch.addEventListener('change', toggleApiKeyInput);
-        toggleApiKeyInput(); // Initial state
-    }
-
-     // --- Аналогично для Log Auto Refresh ---
-     const logRefreshEnabledSwitch = document.getElementById('log_auto_refresh_enabled');
-     const logRefreshIntervalInput = document.getElementById('log_auto_refresh_interval_seconds');
-
-     function toggleLogRefreshInput() {
-         if (logRefreshIntervalInput) {
-             logRefreshIntervalInput.disabled = !logRefreshEnabledSwitch.checked;
-              const parentWrapper = logRefreshIntervalInput.closest('.input-field');
-              if (parentWrapper) {
-                 parentWrapper.style.opacity = logRefreshIntervalInput.disabled ? 0.6 : 1;
+    
+         if (useApiKeySwitch) {
+            useApiKeySwitch.addEventListener('change', toggleApiKeyInput);
+            toggleApiKeyInput(); // Initial state
+        }
+    
+         // --- Similar logic for Log Auto Refresh ---
+         const logRefreshEnabledSwitch = document.getElementById('log_auto_refresh_enabled');
+         const logRefreshIntervalInput = document.getElementById('log_auto_refresh_interval_seconds');
+    
+         function toggleLogRefreshInput() {
+             if (logRefreshIntervalInput) {
+                 logRefreshIntervalInput.disabled = !logRefreshEnabledSwitch.checked;
+                  const parentWrapper = logRefreshIntervalInput.closest('.input-field');
+                  if (parentWrapper) {
+                     parentWrapper.style.opacity = logRefreshIntervalInput.disabled ? 0.6 : 1;
+                 }
              }
          }
-     }
-
-      if (logRefreshEnabledSwitch) {
-        logRefreshEnabledSwitch.addEventListener('change', toggleLogRefreshInput);
-        toggleLogRefreshInput(); // Initial state
-    }
-
-});
-</script>
+    
+          if (logRefreshEnabledSwitch) {
+            logRefreshEnabledSwitch.addEventListener('change', toggleLogRefreshInput);
+            toggleLogRefreshInput(); // Initial state
+        }
+    
+    });
+    </script>
 {% endblock %}

@@ -1,41 +1,39 @@
 <!-- ================================================ -->
 <!-- FILE: src/mcp_manager_ui/ui/templates/bulk_add_form.html -->
-<!-- (Кнопка добавления JSON перемещена вверх) -->
 <!-- ================================================ -->
 {% extends "base.html" %}
 
-{# Импортируем макрос #}
+{# Import the macro #}
 {% from "_server_form_macro.html" import render_server_form %}
 
-{% block title %}Добавление серверов - MCP Менеджер{% endblock %}
-{% block page_title %}Добавление определений серверов{% endblock %}
-{% block page_subtitle %}Добавьте один сервер через форму или несколько из JSON{% endblock %}
+{% block title %}Add Servers - MCP Manager{% endblock %}
+{% block page_title %}Add Server Definitions{% endblock %}
+{% block page_subtitle %}Add a single server via form or multiple servers from JSON{% endblock %}
 
 {% block content %}
 
 <div class="row">
     <div class="col s12">
-        <!-- Структура табов -->
+        <!-- Tabs structure -->
         <ul class="tabs tabs-fixed-width z-depth-1">
-            <li class="tab col s6"><a class="active" href="#tab-single">Добавить один сервер</a></li>
-            <li class="tab col s6"><a href="#tab-bulk">Массовое добавление (JSON)</a></li>
+            <li class="tab col s6"><a class="active" href="#tab-single">Add Single Server</a></li>
+            <li class="tab col s6"><a href="#tab-bulk">Bulk Add (JSON)</a></li>
         </ul>
     </div>
 
-    <!-- ==================== Контент таба: Добавление ОДНОГО сервера ==================== -->
+    <!-- ==================== Tab Content: Add SINGLE server ==================== -->
     <div id="tab-single" class="col s12" style="padding-top: 20px;">
-        <!-- ... (содержимое без изменений) ... -->
         {% if single_server_error %}
         <div class="card-panel red lighten-4 red-text text-darken-4" style="padding: 10px; margin-bottom: 15px;">
-             <i class="material-icons left tiny">error_outline</i><strong>Ошибка добавления:</strong> {{ single_server_error }}
+             <i class="material-icons left tiny">error_outline</i><strong>Error adding server:</strong> {{ single_server_error }}
         </div>
         {% endif %}
 
-        <p class="grey-text text-darken-1"><i class="material-icons tiny left">info_outline</i>Сначала выберите "Тип сервера", чтобы увидеть соответствующие поля (Команда/Аргументы или URL).</p>
+        <p class="grey-text text-darken-1"><i class="material-icons tiny left">info_outline</i>First select "Server type" to see the corresponding fields (Command/Arguments or URL).</p>
 
         {{ render_server_form(
                 action_url=single_add_action_url,
-                submit_button_text='Добавить этот сервер',
+                submit_button_text='Add this server',
                 server=single_server_form_data,
                 error=None,
                 is_add_form=True,
@@ -44,34 +42,33 @@
            )
         }}
     </div>
-    <!-- ==================== Конец контента таба: Добавление ОДНОГО сервера ==================== -->
+    <!-- ==================== End of Tab Content: Add SINGLE server ==================== -->
 
 
-    <!-- ==================== Контент таба: Массовое добавление ==================== -->
+    <!-- ==================== Tab Content: Bulk Add ==================== -->
     <div id="tab-bulk" class="col s12" style="padding-top: 20px;">
-        <!-- Сообщения об ошибках/успехе -->
+        <!-- Error/success messages -->
         {% if bulk_error %}
         <div class="card-panel red lighten-4 red-text text-darken-4" style="padding: 10px;">
-             <i class="material-icons left tiny">error_outline</i><strong>Ошибка обработки JSON:</strong> {{ bulk_error }}
+             <i class="material-icons left tiny">error_outline</i><strong>Error processing JSON:</strong> {{ bulk_error }}
         </div>
         {% endif %}
         {% if bulk_success_count is not none and bulk_success_count > 0 %}
         <div class="card-panel green lighten-4 green-text text-darken-4" style="padding: 10px;">
-             <i class="material-icons left tiny">check_circle_outline</i><strong>Успешно:</strong> Добавлено {{ bulk_success_count }} определений серверов из JSON. <a href="{{ url_for('ui_root') }}">Вернуться к списку</a>.
+             <i class="material-icons left tiny">check_circle_outline</i><strong>Success:</strong> Added {{ bulk_success_count }} server definitions from JSON. <a href="{{ url_for('ui_root') }}">Return to list</a>.
         </div>
         {% elif bulk_success_count is not none and bulk_success_count == 0 and not bulk_error %}
         <div class="card-panel orange lighten-4 orange-text text-darken-4" style="padding: 10px;">
-             <i class="material-icons left tiny">info_outline</i><strong>Заметьте:</strong> Новые определения серверов не были добавлены из JSON (возможно, они уже существуют, JSON пуст/некорректен или содержит ошибки).
+             <i class="material-icons left tiny">info_outline</i><strong>Note:</strong> No new server definitions were added from JSON (they may already exist, JSON is empty/invalid, or contains errors).
         </div>
         {% endif %}
 
-        <!-- Подсказка по формату JSON -->
+        <!-- JSON format hint -->
         <ul class="collapsible" style="margin-top: 15px; margin-bottom: 25px;">
             <li>
-                <div class="collapsible-header"><i class="material-icons">info_outline</i>Примеры валидных JSON форматов</div>
+                <div class="collapsible-header"><i class="material-icons">info_outline</i>Valid JSON Format Examples</div>
                 <div class="collapsible-body">
-                     <!-- ... (содержимое подсказки без изменений) ... -->
-                     <p><strong>Формат 1: Объект с ключом "mcpServers"</strong></p>
+                     <p><strong>Format 1: Object with "mcpServers" key</strong></p>
                     <pre><code class="language-json" style="display: block; background: #f4f4f4; padding: 10px; border-radius: 3px;">{
   "mcpServers": {
     "my-tool-name": {
@@ -85,7 +82,7 @@
     }
   }
 }</code></pre>
-                    <p><strong>Формат 2: Прямое отображение "имя": {конфиг}</strong></p>
+                    <p><strong>Format 2: Direct mapping "name": {config}</strong></p>
                     <pre><code class="language-json" style="display: block; background: #f4f4f4; padding: 10px; border-radius: 3px;">{
   "tool-alpha": {
     "command": "uvx",
@@ -96,7 +93,7 @@
     "url": "http://service-beta/stream"
   }
 }</code></pre>
-                    <p><strong>Формат 3: Список объектов с полем "name"</strong></p>
+                    <p><strong>Format 3: List of objects with "name" field</strong></p>
                      <pre><code class="language-json" style="display: block; background: #f4f4f4; padding: 10px; border-radius: 3px;">[
   {
     "name": "gamma-processor",
@@ -109,57 +106,53 @@
     "url": "https://delta.example.com/feed"
   }
 ]</code></pre>
-                     <p><strong>Обратите внимание:</strong></p>
+                     <p><strong>Note:</strong></p>
                      <ul>
-                         <li>- Лишние поля (<code>disabled</code>, <code>alwaysAllow</code> и т.п.) будут проигнорированы.</li>
-                         <li>- Команды вида <code>cmd /c npx ...</code> или <code>cmd /c uvx ...</code> будут автоматически преобразованы к <code>npx ...</code> и <code>uvx ...</code> при добавлении.</li>
+                         <li>- Extra fields (<code>disabled</code>, <code>alwaysAllow</code>, etc.) will be ignored.</li>
+                         <li>- Commands like <code>cmd /c npx ...</code> or <code>cmd /c uvx ...</code> will be automatically converted to <code>npx ...</code> and <code>uvx ...</code> when added.</li>
                      </ul>
                 </div>
             </li>
         </ul>
 
-        <!-- Форма массового добавления -->
+        <!-- Bulk add form -->
         <form method="post" action="{{ url_for('ui_process_bulk_add') }}">
 
-             <!-- === ИЗМЕНЕНИЕ: Кнопки и опция включения ПЕРЕМЕЩЕНЫ ВВЕРХ === -->
+             <!-- Buttons and enable option -->
              <div class="row" style="margin-bottom: 25px;">
-                <div class="col s12 m6 l7"> {# Кнопки слева #}
+                <div class="col s12 m6 l7"> {# Buttons on the left #}
                      <button class="btn waves-effect waves-light blue darken-1" type="submit">
-                         <i class="material-icons left">playlist_add</i>Добавить из JSON
+                         <i class="material-icons left">playlist_add</i>Add from JSON
                      </button>
                      <a href="{{ url_for('ui_root') }}" class="btn waves-effect waves-light grey lighten-1 black-text">
-                          <i class="material-icons left">cancel</i>Отмена (на главную)
+                          <i class="material-icons left">cancel</i>Cancel (to main)
                      </a>
                 </div>
-                <div class="col s12 m6 l5"> {# Переключатель справа #}
-                    <div class="switch" style="padding-top: 5px;"> {# Небольшой отступ для выравнивания #}
+                <div class="col s12 m6 l5"> {# Switch on the right #}
+                    <div class="switch" style="padding-top: 5px;"> {# Small padding for alignment #}
                         <label>
-                            Добавить выключенными
+                            Add as disabled
                             <input type="checkbox" id="default_enabled" name="default_enabled" value="true">
                             <span class="lever"></span>
-                            Добавить включенными
+                            Add as enabled
                         </label>
-                         <span class="helper-text" style="margin-left: -15px;">Будут ли добавленные серверы сразу включены?</span> {# Скорректирован отступ #}
+                         <span class="helper-text" style="margin-left: -15px;">Will added servers be enabled immediately?</span> {# Adjusted margin #}
                     </div>
                 </div>
              </div>
-             <!-- === КОНЕЦ ПЕРЕМЕЩЕННОГО БЛОКА === -->
 
-             <!-- Поле ввода JSON -->
+             <!-- JSON input field -->
              <div class="row">
                 <div class="input-field col s12">
                      <i class="material-icons prefix">data_object</i>
-                     <textarea id="configJsonStr" name="configJsonStr" class="materialize-textarea" style="height: 300px; font-family: monospace;" required placeholder='Вставьте сюда ваш JSON...'>{{ config_json_str if config_json_str else '' }}</textarea>
-                     <label for="configJsonStr">Конфигурация MCP Серверов (JSON)</label>
+                     <textarea id="configJsonStr" name="configJsonStr" class="materialize-textarea" style="height: 300px; font-family: monospace;" required placeholder='Paste your JSON here...'>{{ config_json_str if config_json_str else '' }}</textarea>
+                     <label for="configJsonStr">MCP Servers Configuration (JSON)</label>
                 </div>
             </div>
-
-             <!-- Старые кнопки здесь больше не нужны -->
-             <!-- <div class="row" style="margin-top: 30px;"> ... </div> -->
         </form>
     </div>
-     <!-- ==================== Конец контента таба: Массовое добавление ==================== -->
+     <!-- ==================== End of Tab Content: Bulk Add ==================== -->
 
-</div> {# Конец .row для табов и контента #}
+</div> {# End of .row for tabs and content #}
 
 {% endblock %}

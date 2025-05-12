@@ -1,9 +1,8 @@
 <!-- ================================================ -->
 <!-- FILE: src/mcp_manager_ui/ui/templates/_server_row.html -->
-<!-- (Переделано под Materialize CSS) -->
 <!-- ================================================ -->
-{# Частичный шаблон для одной строки сервера в таблице #}
-{# Ожидает переменную 'server' (ServerDefinitionRead) #}
+{# Partial template for a single server row in the table #}
+{# Expects 'server' variable (ServerDefinitionRead) #}
 <tr id="server-row-{{ server.id }}">
     <td>
         <!-- Materialize Switch -->
@@ -16,8 +15,8 @@
                     hx-post="{{ url_for('toggle_server', server_id=server.id) }}"
                     hx-target="closest tr"
                     hx-swap="outerHTML"
-                    title="Включить/выключить в генерируемом конфиге"
-                    aria-label="Включить/Выключить сервер">
+                    title="Enable/disable in generated config"
+                    aria-label="Enable/Disable server">
                 <span class="lever"></span>
             </label>
         </div>
@@ -42,16 +41,16 @@
     <td>
         <a href="{{ url_for('ui_edit_server_form', server_id=server.id) }}"
            class="btn-floating btn-small waves-effect waves-light blue tooltipped"
-           data-position="top" data-tooltip="Редактировать">
+           data-position="top" data-tooltip="Edit">
            <i class="material-icons">edit</i>
         </a>
         <button
             hx-delete="{{ url_for('delete_server', server_id=server.id) }}"
             hx-target="closest tr"
             hx-swap="outerHTML"
-            hx-confirm="Вы уверены, что хотите удалить определение '{{ server.name | e }}'?" {# Добавлено экранирование имени #}
+            hx-confirm="Are you sure you want to delete the definition '{{ server.name | e }}'?"
             class="btn-floating btn-small waves-effect waves-light red tooltipped"
-            data-position="top" data-tooltip="Удалить"
+            data-position="top" data-tooltip="Delete"
             style="margin-left: 5px;">
             <i class="material-icons">delete</i>
         </button>
