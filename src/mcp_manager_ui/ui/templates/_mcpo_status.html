@@ -1,0 +1,22 @@
+<!-- ================================================ -->
+<!-- FILE: src/mcp_manager_ui/ui/templates/_mcpo_status.html -->
+<!-- (Переделано под Materialize CSS) -->
+<!-- ================================================ -->
+{# Частичный шаблон для отображения статуса mcpo #}
+{# Ожидает переменную 'mcpo_status' (строка: RUNNING, STOPPED, ERROR, UNKNOWN) #}
+{# и опционально 'message' #}
+<div style="font-size: 1.1em; margin-bottom: 10px;">
+    <strong>Статус MCPO:</strong>
+    {% if mcpo_status == "RUNNING" %}
+        <span class="green-text text-darken-1"><i class="material-icons tiny left" style="vertical-align: middle;">check_circle</i>Работает</span>
+    {% elif mcpo_status == "STOPPED" %}
+        <span class="grey-text text-darken-1"><i class="material-icons tiny left" style="vertical-align: middle;">pause_circle_outline</i>Остановлен</span>
+     {% elif mcpo_status == "ERROR" %}
+         <span class="red-text text-darken-1"><i class="material-icons tiny left" style="vertical-align: middle;">error_outline</i>Ошибка</span> (процесс не найден, проверьте логи)
+    {% else %}
+        <span class="orange-text text-darken-1"><i class="material-icons tiny left" style="vertical-align: middle;">help_outline</i>Неизвестно</span>
+    {% endif %}
+</div>
+{% if message %}
+    <p class="grey-text text-darken-2" style="font-size: 0.9em; margin-top: 0;"><em><i class="material-icons tiny left">info_outline</i>Сообщение: {{ message }}</em></p>
+{% endif %}

@@ -1,0 +1,75 @@
+/* ================================================ */
+/* FILE: src/mcp_manager_ui/ui/static/css/style.css */
+/* (Очищено и готово для новых стилей)        */
+/* ================================================ */
+
+/* Базовые отступы и настройки для Materialize, если стандартных не хватает */
+body {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+  background-color: #f4f4f8; /* Немного другой фон для контраста с карточками */
+}
+
+main {
+  flex: 1 0 auto;
+  padding-bottom: 20px; /* Отступ снизу для контента */
+}
+
+/* Улучшение для Materialize preloader в htmx-indicator */
+.htmx-indicator.preloader-wrapper {
+  display: inline-block; /* По умолчанию HTMX может делать block */
+  opacity: 0;
+  transition: opacity 200ms ease-in;
+  vertical-align: middle; /* Выравнивание по центру текста кнопки */
+}
+.htmx-request .htmx-indicator.preloader-wrapper {
+opacity: 1;
+}
+.htmx-request.htmx-indicator.preloader-wrapper { /* Для элементов, которые сами являются индикаторами */
+opacity: 1;
+}
+
+/* Кастомизация для textarea в формах, чтобы helper-text был виден */
+.input-field textarea + label {
+  width: calc(100% - 0.75rem); /* чтобы метка не наезжала на иконку */
+}
+.input-field textarea ~ .helper-text {
+  margin-bottom: 10px; /* Добавляем отступ снизу, если textarea последняя */
+}
+
+/* Мелкие иконки в тексте */
+.material-icons.tiny {
+  font-size: 1rem; /* или 1.2rem */
+  vertical-align: text-bottom; /* или middle */
+  margin-right: 3px;
+}
+
+/* Для компактности карточек с настройками и логами */
+.card .card-content .collapsible {
+  margin-top: 0;
+  border: none;
+  box-shadow: none;
+}
+.card .card-content .collapsible-header {
+  font-weight: 500;
+  padding: 0.75rem;
+  background-color: rgba(0,0,0,0.03); /* Чуть темнее фон хедера */
+}
+.card .card-content .collapsible-body {
+  padding: 1rem;
+  border-bottom: none; /* Убираем нижнюю границу у тела, т.к. она есть у элемента списка */
+}
+
+/* Более компактные collection-item для списка инструментов */
+.collection.with-header .collection-item {
+  padding: 10px 15px; /* Уменьшаем padding */
+}
+.collection.with-header .collection-item p {
+  margin: 5px 0 0 0; /* Уменьшаем отступы у параграфа с описанием */
+}
+
+/* Фикс для sidenav trigger, чтобы он был видимым на фоне nav */
+nav .sidenav-trigger i {
+  color: white;
+}

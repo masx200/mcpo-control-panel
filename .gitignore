@@ -1,0 +1,9 @@
+code.txt
+collect_data.py
+mcp_generated_config.json
+mcp_manager_data.db
+mcpo_manager.log
+mcpo_manager_settings.json
+mcpo_process.pid
+*.pyc
+uv.lock

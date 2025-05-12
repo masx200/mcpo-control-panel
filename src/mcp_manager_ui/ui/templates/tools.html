@@ -1,0 +1,92 @@
+<!-- ================================================ -->
+<!-- FILE: src/mcp_manager_ui/ui/templates/tools.html -->
+<!-- (Переделано под Materialize CSS) -->
+<!-- ================================================ -->
+{% extends "base.html" %}
+
+{% block title %}Доступные инструменты - MCP Менеджер{% endblock %}
+{% block page_title %}Доступные Инструменты через MCPO{% endblock %}
+{% block page_subtitle %}Список инструментов, которые сейчас доступны через запущенный экземпляр MCPO{% endblock %}
+
+{% block content %}
+
+{% if error_message %} <!-- Ошибка самого менеджера при получении данных -->
+<div class="card-panel red lighten-3 black-text">
+    <strong><i class="material-icons left">error_outline</i>Ошибка Менеджера:</strong> {{ error_message }}
+</div>
+{% endif %}
+
+{% if tools_data.status == "RUNNING" %}
+    {% if tools_data.servers %}
+        {% for server_name, server_data in tools_data.servers.items() %}
+        <div class="row">
+            <div class="col s12">
+                <div class="card blue-grey darken-1 white-text">
+                    <div class="card-content">
+                        <span class="card-title">
+                            <i class="material-icons left">dns</i>Сервер: <strong>{{ server_name }}</strong>
+                            {% if server_data.status == "OK" %}
+                                <span class="new badge green tooltipped" data-badge-caption="OK" data-position="top" data-tooltip="Инструменты успешно загружены"></span>
+                            {% else %}
+                                <span class="new badge red tooltipped" data-badge-caption="ОШИБКА" data-position="top" data-tooltip="Не удалось загрузить инструменты"></span>
+                            {% endif %}
+                        </span>
+
+                        {% if server_data.status == "OK" %}
+                            {% if server_data.tools %}
+                            <ul class="collection with-header" style="border-color: rgba(255,255,255,0.3);">
+                                <li class="collection-header blue-grey darken-2 white-text" style="border-bottom-color: rgba(255,255,255,0.3);">
+                                    <h6>Обнаруженные инструменты ({{ server_data.tools|length }})</h6>
+                                </li>
+                                {% for tool in server_data.tools %}
+                                <li class="collection-item blue-grey darken-1 white-text" style="border-bottom-color: rgba(255,255,255,0.2);">
+                                    <div>
+                                        <code>{{ server_name }}{{ tool.path }}</code>
+                                        <a href="http://127.0.0.1:{{ mcpo_port }}/{{ server_name }}/docs" target="_blank" class="secondary-content tooltipped" data-position="left" data-tooltip="Открыть документацию этого сервера">
+                                            <i class="material-icons blue-grey-text text-lighten-3">description</i>
+                                        </a>
+                                    </div>
+                                    <p class="grey-text text-lighten-2" style="font-size: 0.9em; margin-top: 5px;">
+                                        {% if tool.summary and tool.summary != "No summary" %}
+                                            {{ tool.summary }}
+                                        {% elif tool.description and tool.description != "No description" %}
+                                             {{ tool.description }}
+                                        {% else %}
+                                            <i>Нет описания</i>
+                                        {% endif %}
+                                    </p>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <p class="orange-text text-lighten-3"><em><i class="material-icons tiny left">info_outline</i>Инструменты не найдены для этого сервера.</em></p>
+                            {% endif %}
+                        {% else %}
+                        <p class="red-text text-lighten-3">
+                            <em><i class="material-icons tiny left">warning</i>Ошибка получения инструментов: {{ server_data.error_message }}</em>
+                        </p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% elif not error_message %} <!-- Если статус RUNNING, но нет серверов И нет ошибки менеджера -->
+        <div class="card-panel orange lighten-4 black-text">
+            <i class="material-icons left">info_outline</i>
+            MCPO запущен, но не найдено активных определений серверов в конфигурации или не удалось получить информацию о них.
+        </div>
+    {% endif %}
+{% elif tools_data.status == "STOPPED" %}
+    <div class="card-panel orange lighten-4 black-text">
+        <i class="material-icons left">power_settings_new</i>
+        Процесс MCPO сейчас остановлен. Запустите его на странице <a href="{{ url_for('ui_root') }}">Серверы и Управление</a>, чтобы увидеть доступные инструменты.
+    </div>
+{% else %} {# ERROR или UNKNOWN #}
+    <div class="card-panel red lighten-3 black-text">
+        <i class="material-icons left">error_outline</i>
+        Процесс MCPO не работает корректно (Статус: {{ tools_data.status }}). Проверьте логи и статус на странице <a href="{{ url_for('ui_root') }}">Серверы и Управление</a>.
+    </div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,115 @@
+<!-- ================================================ -->
+<!-- FILE: src/mcp_manager_ui/ui/templates/mcpo_settings_form.html -->
+<!-- (Добавлены поля для настроек логов) -->
+<!-- ================================================ -->
+{% extends "base.html" %}
+
+{% block title %}Настройки MCPO - MCP Менеджер{% endblock %}
+{% block page_title %}Настройки MCPO{% endblock %}
+{% block page_subtitle %}Конфигурация параметров запуска сервера mcpo и интерфейса менеджера{% endblock %}
+
+{% block content %}
+
+{% if error %}
+<div class="card-panel red lighten-3 black-text">
+    <strong><i class="material-icons left tiny">error_outline</i>Ошибка:</strong> {{ error }}
+</div>
+{% endif %}
+
+{% if success %}
+<div class="card-panel green lighten-3 black-text">
+    <strong><i class="material-icons left tiny">check_circle_outline</i>Успешно:</strong> {{ success }}
+</div>
+{% endif %}
+
+<div class="row">
+    <form class="col s12" method="post" action="{{ url_for('ui_update_mcpo_settings') }}">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">Основные настройки MCPO</span>
+                <div class="row">
+                    <div class="input-field col s12 m6">
+                        <i class="material-icons prefix">settings_input_antenna</i>
+                        <input type="number" id="port" name="port" value="{{ settings.port if settings else 8000 }}" required min="1024" max="65535" class="validate">
+                        <label for="port">Порт MCPO</label>
+                        <span class="helper-text">Порт для запуска сервера mcpo (напр., 8000)</span>
+                    </div>
+                </div>
+                <div class="row">
+                     <div class="input-field col s12 m9">
+                        <i class="material-icons prefix">key</i>
+                        <input type="text" id="api_key" name="api_key" value="{{ settings.api_key if settings and settings.api_key is not none else '' }}">
+                        <label for="api_key">API Ключ MCPO (опционально)</label>
+                         <span class="helper-text">Ключ для защиты эндпоинтов. Оставьте пустым, если не используется</span>
+                    </div>
+                    <div class="col s12 m3" style="padding-top: 25px;">
+                         <div class="switch">
+                            <label>
+                                Выкл.
+                                <input type="checkbox" id="use_api_key" name="use_api_key" value="true" {% if settings and settings.use_api_key %}checked{% endif %}>
+                                <span class="lever"></span>
+                                Вкл. API ключ
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="input-field col s12">
+                        <i class="material-icons prefix">description</i>
+                        <input type="text" id="config_file_path" name="config_file_path" value="{{ settings.config_file_path if settings else 'mcp_generated_config.json' }}" required class="validate">
+                        <label for="config_file_path">Путь к файлу конфигурации MCPO</label>
+                        <span class="helper-text">Файл, который будет генерироваться для mcpo.</span>
+                    </div>
+                </div>
+                 <div class="row" style="margin-bottom: 0;">
+                    <div class="input-field col s12">
+                        <i class="material-icons prefix">assignment</i>
+                        <input type="text" id="log_file_path" name="log_file_path" value="{{ settings.log_file_path if settings and settings.log_file_path is not none else '' }}">
+                        <label for="log_file_path">Путь к лог-файлу MCPO (опционально)</label>
+                        <span class="helper-text">Файл для записи логов процесса mcpo. Если не указан, логи могут не сохраняться.</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="margin-top: 20px;">
+            <div class="card-content">
+                <span class="card-title">Настройки отображения логов</span>
+                 <div class="row">
+                    <div class="input-field col s12 m7">
+                        <i class="material-icons prefix">timer</i>
+                        <input type="number" id="log_auto_refresh_interval_seconds" name="log_auto_refresh_interval_seconds"
+                               value="{{ settings.log_auto_refresh_interval_seconds if settings else 180 }}"
+                               required min="5" max="3600" class="validate">
+                        <label for="log_auto_refresh_interval_seconds">Интервал автообновления логов (сек)</label>
+                        <span class="helper-text">Как часто обновлять логи на странице логов (5-3600 сек).</span>
+                    </div>
+                     <div class="col s12 m5" style="padding-top: 25px;">
+                         <div class="switch">
+                            <label>
+                                Автообновление выкл.
+                                <input type="checkbox" id="log_auto_refresh_enabled" name="log_auto_refresh_enabled"
+                                       value="true" {% if settings and settings.log_auto_refresh_enabled %}checked{% endif %}>
+                                <span class="lever"></span>
+                                Автообновление вкл.
+                            </label>
+                        </div>
+                    </div>
+                 </div>
+            </div>
+        </div>
+
+
+        <div class="row" style="margin-top: 30px;">
+            <div class="col s12">
+                 <button class="btn waves-effect waves-light blue darken-1" type="submit">
+                     <i class="material-icons left">save</i>Сохранить все настройки
+                 </button>
+                 <a href="{{ url_for('ui_root') }}" class="btn waves-effect waves-light grey lighten-1 black-text">
+                      <i class="material-icons left">cancel</i>Отмена
+                 </a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

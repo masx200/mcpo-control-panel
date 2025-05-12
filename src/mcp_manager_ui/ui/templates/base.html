@@ -1,0 +1,66 @@
+<!-- ================================================ -->
+<!-- FILE: src/mcp_manager_ui/ui/templates/base.html  -->
+<!-- (Обновляем навигацию для страницы логов)      -->
+<!-- ================================================ -->
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MCP Менеджер{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <script src="{{ url_for('static', path='/js/main.js') }}" defer></script>
+    {% block head_extra %}{% endblock %}
+</head>
+<body>
+    <nav class="blue-grey darken-3">
+        <div class="nav-wrapper container">
+            <a href="{{ url_for('ui_root') }}" class="brand-logo" style="font-size: 1.6rem;">
+                <i class="material-icons left" style="margin-right: 8px;">settings_input_component</i>MCP Менеджер
+            </a>
+            <a href="#" data-target="mobile-nav" class="sidenav-trigger"><i class="material-icons">menu</i></a>
+
+            <ul class="right hide-on-med-and-down">
+                <li><a href="{{ url_for('ui_root') }}"><i class="material-icons left">list</i>Серверы и Управление</a></li>
+                <li><a href="{{ url_for('ui_tools') }}"><i class="material-icons left">widgets</i>Доступные Инструменты</a></li>
+                <!-- ИЗМЕНЕНО: Добавлена ссылка на логи -->
+                <li><a href="{{ url_for('ui_logs') }}"><i class="material-icons left">dvr</i>Логи MCPO</a></li>
+                <li><a href="{{ url_for('ui_edit_mcpo_settings_form') }}"><i class="material-icons left">settings</i>Настройки MCPO</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <ul class="sidenav blue-grey darken-4 white-text" id="mobile-nav">
+         <li><a href="{{ url_for('ui_root') }}" class="white-text"><i class="material-icons left white-text">list</i>Серверы и Управление</a></li>
+         <li><a href="{{ url_for('ui_tools') }}" class="white-text"><i class="material-icons left white-text">widgets</i>Доступные Инструменты</a></li>
+         <!-- ИЗМЕНЕНО: Добавлена ссылка на логи -->
+         <li><a href="{{ url_for('ui_logs') }}" class="white-text"><i class="material-icons left white-text">dvr</i>Логи MCPO</a></li>
+         <li><a href="{{ url_for('ui_edit_mcpo_settings_form') }}" class="white-text"><i class="material-icons left white-text">settings</i>Настройки MCPO</a></li>
+    </ul>
+
+    <main class="container" style="margin-top: 20px;">
+        <h4 class="blue-grey-text text-darken-2">{% block page_title %}MCP Серверы{% endblock %}</h4>
+        <p class="grey-text text-darken-1">{% block page_subtitle %}Управление конфигурациями MCP серверов и процессом mcpo{% endblock %}</p>
+        <div class="divider" style="margin-bottom: 20px;"></div>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="page-footer blue-grey darken-2" style="margin-top: 40px; padding-top: 20px;">
+         <div class="footer-copyright blue-grey darken-3">
+            <div class="container">
+            © {{ now().year }} MCP Менеджер
+            </div>
+         </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            M.AutoInit();
+        });
+    </script>
+</body>
+</html>

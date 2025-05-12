@@ -1,0 +1,13 @@
+[project]
+name = "mcpo-control-panel"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi[all]>=0.115.12",
+    "httpx>=0.28.1",
+    "mcpo>=0.0.14",
+    "sqlalchemy>=2.0.40",
+    "sqlmodel>=0.0.24",
+]
