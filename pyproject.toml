@@ -1,13 +1,32 @@
+# pyproject.toml
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+backend-path = ["."] 
+
 [project]
-name = "mcpo-control-panel"
-version = "0.1.0"
-description = "Add your description here"
+name = "mcpo-control-panel" 
+version = "0.0.1"          
+description = "Web UI and API for managing MCP Orchestrator (mcpo) instances and configurations." 
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.11" 
+
+authors = [
+    {name = "daswer123", email = "daswer123@gmail.com"}
+]
+
 dependencies = [
     "fastapi[all]>=0.115.12",
-    "httpx>=0.28.1",
-    "mcpo>=0.0.14",
-    "sqlalchemy>=2.0.40",
-    "sqlmodel>=0.0.24",
+    "httpx>=0.28.1",       
+    "mcpo>=0.0.14",        
+    "sqlmodel>=0.0.24",    
+    "sqlite-aiosqlite>=3.45.0" 
 ]
+
+[project.urls] 
+Homepage = "https://github.com/daswer123/mcpo-control-panel"
+Repository = "https://github.com/daswer123/mcpo-control-panel"
+
+[tool.setuptools.packages.find]
+include = ["mcpo_control_panel*"]
