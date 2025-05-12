@@ -1,5 +1,5 @@
 # ================================================
-# FILE: src/mcp_manager_ui/models/server_definition.py
+# FILE: mcpo_control_panel/models/server_definition.py
 # ================================================
 import json
 from typing import Optional, List, Dict, Any

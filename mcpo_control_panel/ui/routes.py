@@ -1,7 +1,8 @@
 # ================================================
-# FILE: src/mcp_manager_ui/ui/routes.py
+# FILE: mcpo_control_panel/ui/routes.py
 # (Updated for Tabbed Add Page and 2-step Bulk Add)
 # ================================================
+
 import html
 import logging
 import json
@@ -340,11 +341,12 @@ async def handle_update_mcpo_settings_form(
     config_file_path: str = Form(...),
     log_file_path: Optional[str] = Form(None),
     log_auto_refresh_enabled: bool = Form(False),
-    log_auto_refresh_interval_seconds: int = Form(...),
+    log_auto_refresh_interval_seconds: int = Form(...), # This one is always present if its section is enabled
     health_check_enabled: bool = Form(False),
-    health_check_interval_seconds: int = Form(...),
-    health_check_failure_attempts: int = Form(...),
-    health_check_failure_retry_delay_seconds: int = Form(...),
+    # Make these optional in the Form, as they might not be sent if health_check_enabled is false
+    health_check_interval_seconds: Optional[int] = Form(None),
+    health_check_failure_attempts: Optional[int] = Form(None),
+    health_check_failure_retry_delay_seconds: Optional[int] = Form(None),
     auto_restart_on_failure: bool = Form(False)
 ):
     """Handles data from the MCPO settings form."""
@@ -379,6 +381,31 @@ async def handle_update_mcpo_settings_form(
         clean_public_base_url = public_base_url if public_base_url and public_base_url.strip() else None
 
         # Create model instance for validation
+        # If health_check_enabled is False, the form might not send the related integer fields.
+        # We should provide their default values from the model itself in that case.
+        # Get default values from the model schema for conditional fields
+        model_defaults = McpoSettings.model_fields
+
+        # Assign defaults if health check is disabled OR if the values were not provided by the form
+        hc_interval = health_check_interval_seconds
+        if health_check_interval_seconds is None or not health_check_enabled:
+            hc_interval = model_defaults['health_check_interval_seconds'].default
+        
+        hc_attempts = health_check_failure_attempts
+        if health_check_failure_attempts is None or not health_check_enabled:
+            hc_attempts = model_defaults['health_check_failure_attempts'].default
+
+        hc_retry_delay = health_check_failure_retry_delay_seconds
+        if health_check_failure_retry_delay_seconds is None or not health_check_enabled:
+            hc_retry_delay = model_defaults['health_check_failure_retry_delay_seconds'].default
+            
+        # auto_restart_on_failure is a bool, Form(False) should handle it if not sent.
+        # If health_check_enabled is false, auto_restart_on_failure should also effectively be false or its default.
+        current_auto_restart = auto_restart_on_failure
+        if not health_check_enabled:
+            current_auto_restart = model_defaults['auto_restart_on_failure'].default
+
+
         settings_for_validation = McpoSettings(
             port=port,
             public_base_url=clean_public_base_url, # Use cleaned value
@@ -389,10 +416,10 @@ async def handle_update_mcpo_settings_form(
             log_auto_refresh_enabled=log_auto_refresh_enabled,
             log_auto_refresh_interval_seconds=log_auto_refresh_interval_seconds,
             health_check_enabled=health_check_enabled,
-            health_check_interval_seconds=health_check_interval_seconds,
-            health_check_failure_attempts=health_check_failure_attempts,
-            health_check_failure_retry_delay_seconds=health_check_failure_retry_delay_seconds,
-            auto_restart_on_failure=auto_restart_on_failure
+            health_check_interval_seconds=hc_interval,
+            health_check_failure_attempts=hc_attempts,
+            health_check_failure_retry_delay_seconds=hc_retry_delay,
+            auto_restart_on_failure=current_auto_restart
         )
 
         # Save valid settings via service

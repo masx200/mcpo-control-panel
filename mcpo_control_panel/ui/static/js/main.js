@@ -1,5 +1,5 @@
 // ================================================ //
-// FILE: src/mcp_manager_ui/ui/static/js/main.js  //
+// FILE: mcpo_control_panel/ui/static/js/main.js  //
 // (Simplified initialization)                     //
 // ================================================ //
 

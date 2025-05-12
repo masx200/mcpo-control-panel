@@ -1,5 +1,5 @@
 # ================================================
-# FILE: src/mcp_manager_ui/api/mcpo_control.py
+# FILE: mcpo_control_panel/api/mcpo_control.py
 # ================================================
 import logging
 import html

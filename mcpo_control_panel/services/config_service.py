@@ -1,10 +1,11 @@
 # ================================================
-# FILE: src/mcp_manager_ui/services/config_service.py
+# FILE: mcpo_control_panel/services/config_service.py
 # ================================================
 import json
 import logging
 import os
 from typing import List, Optional, Dict, Any, TypedDict, Tuple
+from pathlib import Path
 
 from sqlmodel import Session, select, SQLModel
 from pydantic import ValidationError
@@ -15,7 +16,13 @@ from ..models.server_definition import (
 from ..models.mcpo_settings import McpoSettings
 
 logger = logging.getLogger(__name__)
-SETTINGS_FILE = "mcpo_manager_settings.json"
+SETTINGS_FILE_NAME = "mcpo_manager_settings.json" # Renamed for clarity
+
+def _get_data_dir() -> Path:
+    return Path(os.getenv("MCPO_MANAGER_DATA_DIR_EFFECTIVE", Path.home() / ".mcpo_manager_data"))
+
+def _get_settings_file_path() -> Path:
+    return _get_data_dir() / SETTINGS_FILE_NAME
 
 class InvalidServerInfo(TypedDict): # Unchanged
     name: Optional[str]
@@ -30,36 +37,55 @@ class AnalysisResult(TypedDict): # Unchanged
 
 # --- McpoSettings functions ---
 def load_mcpo_settings() -> McpoSettings:
-    if not os.path.exists(SETTINGS_FILE):
-        logger.warning(f"Settings file {SETTINGS_FILE} not found. Using default settings.")
-        default_settings = McpoSettings()
+    settings_file_path = _get_settings_file_path()
+    if not settings_file_path.exists():
+        logger.warning(f"Settings file {settings_file_path} not found. Using default settings.")
+        # Pass the correct data_dir when creating default settings
+        default_settings = McpoSettings(config_file_path=str(_get_data_dir() / "mcp_generated_config.json"))
         save_mcpo_settings(default_settings)
         return default_settings
     try:
-        with open(SETTINGS_FILE, 'r') as f:
+        with open(settings_file_path, 'r') as f:
             settings_data = json.load(f)
+            # Ensure config_file_path is correctly initialized if loaded from an old file
+            if "config_file_path" not in settings_data or not settings_data.get("config_file_path"):
+                logger.info(f"Missing 'config_file_path' in settings, re-initializing to default name within data_dir: {_get_data_dir()}")
+                settings_data["config_file_path"] = "mcp_generated_config.json" # Store only filename
+            elif not Path(settings_data["config_file_path"]).is_absolute():
+                # If it's relative, ensure we only store the filename part
+                original_path = settings_data["config_file_path"]
+                filename_only = Path(original_path).name
+                if original_path != filename_only:
+                    logger.info(f"Relative 'config_file_path' ('{original_path}') found in settings, storing only filename: '{filename_only}'")
+                settings_data["config_file_path"] = filename_only
+            # If it is absolute, we keep it as is, generate_mcpo_config_file will handle it.
+
             settings = McpoSettings(**settings_data)
-            logger.info(f"MCPO settings loaded from {SETTINGS_FILE}")
+            logger.info(f"MCPO settings loaded from {settings_file_path}")
             return settings
     except (IOError, json.JSONDecodeError, TypeError, ValidationError) as e:
-        logger.error(f"Error loading or parsing settings file {SETTINGS_FILE}: {e}. Using default settings.", exc_info=True)
-        default_settings = McpoSettings()
-        save_mcpo_settings(default_settings)
+        logger.error(f"Error loading or parsing settings file {settings_file_path}: {e}. Using default settings.", exc_info=True)
+        # When creating default, ensure config_file_path is just the name
+        default_settings = McpoSettings(config_file_path="mcp_generated_config.json")
+        save_mcpo_settings(default_settings) # Attempt to save defaults if loading fails
         return default_settings
 
 
 def save_mcpo_settings(settings: McpoSettings) -> bool:
-    logger.info(f"Saving MCPO settings to {SETTINGS_FILE}")
+    settings_file_path = _get_settings_file_path()
+    logger.info(f"Saving MCPO settings to {settings_file_path}")
     try:
-        with open(SETTINGS_FILE, 'w') as f:
+        # Ensure the directory exists
+        settings_file_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(settings_file_path, 'w') as f:
             json.dump(settings.model_dump(mode='json', exclude_none=True), f, indent=2)
-        logger.info(f"MCPO settings successfully saved.")
+        logger.info(f"MCPO settings successfully saved to {settings_file_path}")
         return True
     except IOError as e:
-        logger.error(f"Error writing MCPO settings file to {SETTINGS_FILE}: {e}")
+        logger.error(f"Error writing MCPO settings file to {settings_file_path}: {e}")
         return False
     except Exception as e:
-        logger.error(f"Unexpected error when saving MCPO settings: {e}", exc_info=True)
+        logger.error(f"Unexpected error when saving MCPO settings to {settings_file_path}: {e}", exc_info=True)
         return False
 
 # --- ServerDefinition CRUD operations ---
@@ -273,8 +299,20 @@ def generate_mcpo_config_file(db: Session, settings: McpoSettings) -> bool:
     Generates a standard MCPO configuration file and writes it to disk.
     Does not apply Windows adaptations.
     """
-    output_path = settings.config_file_path
-    logger.info(f"Generating standard MCPO configuration file: {output_path}")
+    # Ensure config_file_path is absolute and within the data_dir
+    data_dir = _get_data_dir()
+    # Always construct the output path by joining the data_dir with the filename from settings.config_file_path
+    # This ensures that even if settings.config_file_path somehow contains subdirectories,
+    # we only use the filename part, preventing duplication like 'mcpo_data/mcpo_data/file.json'.
+    # Path().name will correctly extract the filename.
+    config_filename = Path(settings.config_file_path).name
+    if not config_filename: # Handle empty or "." case
+        config_filename = "mcp_generated_config.json" # Default filename if extracted name is empty
+        logger.warning(f"Empty config_file_path in settings, defaulting to '{config_filename}'")
+        settings.config_file_path = config_filename # Update settings in memory for consistency
+
+    output_path = data_dir / config_filename
+    logger.info(f"Generating standard MCPO configuration file: {output_path} (from data_dir: '{data_dir}' and config_filename: '{config_filename}')")
 
     try:
         mcp_servers_config = _build_mcp_servers_config_dict(db, settings, adapt_for_windows=False)

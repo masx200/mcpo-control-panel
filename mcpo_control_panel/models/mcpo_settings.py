@@ -1,10 +1,17 @@
 # ================================================
-# FILE: src/mcp_manager_ui/models/mcpo_settings.py
+# FILE: mcpo_control_panel/models/mcpo_settings.py
 # ================================================
 from pydantic import BaseModel, Field, field_validator, PositiveInt, HttpUrl
 from typing import Optional, List, Dict
 import os
 from urllib.parse import urlparse  # For basic URL validation
+from pathlib import Path # Added Path
+
+# Helper to get the data directory, similar to config_service
+# This ensures that default paths are constructed correctly even before config_service is fully active
+# or if McpoSettings is instantiated independently.
+def _get_default_data_dir_for_settings() -> Path:
+    return Path(os.getenv("MCPO_MANAGER_DATA_DIR_EFFECTIVE", Path.home() / ".mcpo_manager_data"))
 
 class McpoSettings(BaseModel):
     """Model for storing mcpo and UI manager settings."""
@@ -12,12 +19,12 @@ class McpoSettings(BaseModel):
     api_key: Optional[str] = Field(default=None, description="API key for protecting mcpo endpoints")
     use_api_key: bool = Field(default=False, description="Whether to use API key when starting mcpo")
     config_file_path: str = Field(
-        default="mcpo_manager_data/mcp_generated_config.json",
-        description="Path for saving the generated mcpo config file"
+        default_factory=lambda: str(_get_default_data_dir_for_settings() / "mcp_generated_config.json"),
+        description="Path for saving the generated mcpo config file. Defaults to a path within the MCPO_MANAGER_DATA_DIR_EFFECTIVE."
     )
     log_file_path: Optional[str] = Field(
-        default="mcpo_manager.log",
-        description="Path to the log file for mcpo. If empty, logs may not be saved."
+        default_factory=lambda: str(_get_default_data_dir_for_settings() / "mcpo_manager.log"),
+        description="Path to the log file for mcpo. If empty, logs may not be saved. Defaults to a path within the MCPO_MANAGER_DATA_DIR_EFFECTIVE."
     )
 
     public_base_url: Optional[str] = Field(

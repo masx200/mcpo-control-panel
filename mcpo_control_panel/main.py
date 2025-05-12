@@ -1,5 +1,5 @@
 # ================================================
-# FILE: src/mcp_manager_ui/main.py
+# FILE: mcpo_control_panel/main.py
 # ================================================
 import logging
 from contextlib import asynccontextmanager
@@ -46,12 +46,24 @@ async def lifespan(app: FastAPI):
             logger.info("Health Check background task successfully cancelled.")
         except Exception as e:
             logger.error(f"Error terminating Health Check background task: {e}", exc_info=True)
+
+    # Stop MCPO server if it's running
+    logger.info("Attempting to stop MCPO server if running...")
+    try:
+        stop_success, stop_message = await mcpo_service.stop_mcpo()
+        if stop_success:
+            logger.info(f"MCPO server stop attempt result: {stop_message}")
+        else:
+            logger.warning(f"MCPO server stop attempt failed: {stop_message}")
+    except Exception as e:
+        logger.error(f"Error during MCPO server stop: {e}", exc_info=True)
+
     logger.info("MCP Manager UI stopped.")
 
 app = FastAPI(title="MCP Manager UI", lifespan=lifespan)
 
-static_dir = "src/mcp_manager_ui/ui/static"
-templates_dir = "src/mcp_manager_ui/ui/templates"
+static_dir = "mcpo_control_panel/ui/static"
+templates_dir = "mcpo_control_panel/ui/templates"
 os.makedirs(os.path.join(static_dir, "css"), exist_ok=True)
 os.makedirs(os.path.join(static_dir, "js"), exist_ok=True)
 os.makedirs(templates_dir, exist_ok=True)

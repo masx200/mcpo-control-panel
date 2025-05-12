@@ -1,5 +1,5 @@
 # ================================================
-# FILE: src/mcp_manager_ui/services/mcpo_service.py
+# FILE: mcpo_control_panel/services/mcpo_service.py
 # (Full version with updated get_aggregated_tools_from_mcpo)
 # ================================================
 import asyncio
@@ -17,11 +17,28 @@ from ..models.mcpo_settings import McpoSettings
 from .config_service import load_mcpo_settings, generate_mcpo_config_file, get_server_definitions
 from ..db.database import engine # Import engine directly for background tasks
 
+from pathlib import Path # Added Path
+
 logger = logging.getLogger(__name__)
-PID_FOLDER = "mcpo_manager_data"
-if not os.path.exists(PID_FOLDER):
-    os.makedirs(PID_FOLDER)
-PID_FILE = f"{PID_FOLDER}/mcpo_process.pid"
+
+# Determine the PID file path using MCPO_MANAGER_DATA_DIR_EFFECTIVE
+DEFAULT_DATA_DIR_NAME_FOR_SERVICE = ".mcpo_manager_data" # Consistent default
+PID_FILENAME = "mcpo_process.pid"
+
+def _get_pid_file_path() -> str:
+    """Determines the full path for the PID file based on the effective data directory."""
+    effective_data_dir_str = os.getenv("MCPO_MANAGER_DATA_DIR_EFFECTIVE")
+    if effective_data_dir_str:
+        pid_dir = Path(effective_data_dir_str)
+    else:
+        # Fallback to a default directory if the env var is not set
+        # This should ideally not happen if __main__.py sets it, but good for robustness
+        pid_dir = Path.home() / DEFAULT_DATA_DIR_NAME_FOR_SERVICE
+    
+    pid_dir.mkdir(parents=True, exist_ok=True) # Ensure the directory exists
+    return str(pid_dir / PID_FILENAME)
+
+PID_FILE = _get_pid_file_path() # Dynamically set PID_FILE path
 
 # --- State variables for Health Check ---
 _health_check_failure_counter = 0
@@ -32,35 +49,44 @@ _mcpo_manual_restart_in_progress = False # Flag so the health checker doesn't in
 def _save_pid(pid: int):
     """Saves the MCPO process PID to a file."""
     try:
-        with open(PID_FILE, "w") as f:
+        # PID_FILE is now a function call to ensure it's always up-to-date if called early
+        # However, since it's set globally once, direct use is fine.
+        # For consistency, let's ensure the directory exists right before writing,
+        # though _get_pid_file_path already does this.
+        pid_file_path_str = _get_pid_file_path() # Get current path
+        Path(pid_file_path_str).parent.mkdir(parents=True, exist_ok=True)
+
+        with open(pid_file_path_str, "w") as f:
             f.write(str(pid))
-        logger.info(f"MCPO process PID {pid} saved to {PID_FILE}")
+        logger.info(f"MCPO process PID {pid} saved to {pid_file_path_str}")
     except IOError as e:
-        logger.error(f"Error saving PID {pid} to {PID_FILE}: {e}")
+        logger.error(f"Error saving PID {pid} to {_get_pid_file_path()}: {e}")
 
 def _load_pid() -> Optional[int]:
     """Loads the MCPO process PID from the file."""
-    if not os.path.exists(PID_FILE):
+    pid_file_path_str = _get_pid_file_path()
+    if not os.path.exists(pid_file_path_str):
         return None
     try:
-        with open(PID_FILE, "r") as f:
+        with open(pid_file_path_str, "r") as f:
             pid_str = f.read().strip()
             if pid_str:
                 return int(pid_str)
             return None
     except (IOError, ValueError) as e:
-        logger.error(f"Error loading PID from {PID_FILE}: {e}")
+        logger.error(f"Error loading PID from {pid_file_path_str}: {e}")
         _clear_pid() # Clear the invalid file
         return None
 
 def _clear_pid():
     """Deletes the PID file."""
-    if os.path.exists(PID_FILE):
+    pid_file_path_str = _get_pid_file_path()
+    if os.path.exists(pid_file_path_str):
         try:
-            os.remove(PID_FILE)
-            logger.info(f"PID file {PID_FILE} deleted.")
+            os.remove(pid_file_path_str)
+            logger.info(f"PID file {pid_file_path_str} deleted.")
         except OSError as e:
-            logger.error(f"Error deleting PID file {PID_FILE}: {e}")
+            logger.error(f"Error deleting PID file {pid_file_path_str}: {e}")
 
 def _is_process_running(pid: Optional[int]) -> bool:
     """Checks if a process with the given PID is running."""

@@ -1,5 +1,5 @@
 # ================================================
-# FILE: src/mcp_manager_ui/api/server_crud.py
+# FILE: mcpo_control_panel/api/server_crud.py
 # ================================================
 import logging
 from typing import Optional

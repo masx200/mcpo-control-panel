@@ -1,16 +1,16 @@
-# src/mcp_manager_ui/__main__.py
+# mcpo_control_panel/__main__.py
 
 import argparse
-import uvicorn
 import os
 from pathlib import Path
+import sys
+import logging
 
-# Предположим, что ваш FastAPI app объект создается в mcp_manager_ui.main:create_app()
-# или просто импортируется как mcp_manager_ui.main:app
-# Измените этот импорт в соответствии с вашей структурой!
-from mcp_manager_ui.main import app # Или create_app()
+# Configure basic logger to see outputs before uvicorn setup
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
 
-def main():
+def setup_environment_and_parse_args():
     parser = argparse.ArgumentParser(description="Run the MCPO Manager UI.")
     parser.add_argument(
         "--host",
@@ -21,7 +21,7 @@ def main():
     parser.add_argument(
         "--port",
         type=int,
-        default=int(os.getenv("MCPO_MANAGER_PORT", "8000")),
+        default=int(os.getenv("MCPO_MANAGER_PORT", "8083")),
         help="Port to bind the server to.",
     )
     parser.add_argument(
@@ -36,34 +36,57 @@ def main():
         help="Enable auto-reload (for development).",
     )
     parser.add_argument(
-        "--config-dir", # Добавим аргумент для пути к данным, если нужно
+        "--config-dir",
         type=str,
         default=os.getenv("MCPO_MANAGER_DATA_DIR", str(Path.home() / ".mcpo_manager_data")),
         help="Directory for storing MCPO manager data (PID files, generated configs, settings)."
     )
-
+    
     args = parser.parse_args()
+    logger.info(f"Parsed arguments (args): {args}")
+    logger.info(f"Value of args.config_dir before resolving: '{args.config_dir}'")
 
-    # Установка переменной окружения для config_service и mcpo_service
-    # чтобы они знали, где хранить данные, если они это используют
-    os.environ["MCPO_MANAGER_DATA_DIR_EFFECTIVE"] = args.config_dir
-    # Создадим директорию, если ее нет
-    Path(args.config_dir).mkdir(parents=True, exist_ok=True)
+    # Convert config_dir to absolute path for consistency
+    try:
+        path_to_resolve = args.config_dir
+        if not path_to_resolve:
+             logger.warning("args.config_dir is empty or None, falling back to default logic for absolute_config_dir")
+             path_to_resolve = os.getenv("MCPO_MANAGER_DATA_DIR", str(Path.home() / ".mcpo_manager_data"))
+        absolute_config_dir = str(Path(path_to_resolve).resolve())
+        logger.info(f"Resolved absolute_config_dir: '{absolute_config_dir}'")
+    except Exception as e:
+        logger.error(f"Error resolving config_dir '{args.config_dir}': {e}", exc_info=True)
+        logger.warning("Falling back to default data directory due to resolution error.")
+        absolute_config_dir = str((Path.home() / ".mcpo_manager_data").resolve())
+        logger.info(f"Fallback absolute_config_dir: '{absolute_config_dir}'")
 
+    os.environ["MCPO_MANAGER_DATA_DIR_EFFECTIVE"] = absolute_config_dir
+    logger.info(f"Set MCPO_MANAGER_DATA_DIR_EFFECTIVE to: '{absolute_config_dir}'")
+    
+    try:
+        Path(absolute_config_dir).mkdir(parents=True, exist_ok=True)
+        logger.info(f"Ensured directory exists: {absolute_config_dir}")
+    except Exception as e:
+        logger.error(f"Failed to create directory {absolute_config_dir}: {e}", exc_info=True)
+    
+    return args # Return args for use in main
 
-    # Если ваш `app` создается функцией-фабрикой:
-    # current_app = create_app()
-    # uvicorn.run(current_app, host=args.host, port=args.port, workers=args.workers, reload=args.reload)
+def main():
+    """Main function to run the application."""
+    cli_args = setup_environment_and_parse_args()
 
-    # Если `app` это просто объект:
+    # Now that environment variables are set, import uvicorn and app
+    import uvicorn
+    from .main import app # Import FastAPI app object
+
+    logger.info(f"Starting Uvicorn with host={cli_args.host}, port={cli_args.port}...")
     uvicorn.run(
-        "mcp_manager_ui.main:app", # Путь к вашему FastAPI app объекту
-        host=args.host,
-        port=args.port,
-        workers=args.workers,
-        reload=args.reload,
-        # reload_dirs=["src/mcp_manager_ui"] if args.reload else None, # Для корректного релоада
-        # log_level="info"
+        app, # Pass the app object
+        host=cli_args.host,
+        port=cli_args.port,
+        workers=cli_args.workers,
+        reload=cli_args.reload,
+        # log_level="info" # Can configure uvicorn log level separately
     )
 
 if __name__ == "__main__":
