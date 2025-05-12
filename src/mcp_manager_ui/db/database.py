@@ -10,7 +10,9 @@ load_dotenv()
 
 # Определяем путь к файлу БД. Можно взять из .env или использовать дефолт.
 # Лучше хранить данные не прямо в src, а, например, в корне проекта или специальной data/ папке.
-DATABASE_FILE = os.getenv("DATABASE_FILE", "mcp_manager_data.db")
+DATABASE_DIR = os.path.join('mcpo_manager_data')
+os.makedirs(DATABASE_DIR, exist_ok=True)
+DATABASE_FILE = os.path.join(DATABASE_DIR, "mcp_manager_data.db")
 DATABASE_URL = f"sqlite:///{DATABASE_FILE}"
 
 # Создаем "движок" для подключения к БД.

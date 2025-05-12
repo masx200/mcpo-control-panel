@@ -1,92 +1,354 @@
+<!-- src/mcp_manager_ui/ui/templates/tools.html -->
 <!-- ================================================ -->
 <!-- FILE: src/mcp_manager_ui/ui/templates/tools.html -->
-<!-- (Переделано под Materialize CSS) -->
+<!-- (Компактный дизайн + Base URL в заголовке) -->
 <!-- ================================================ -->
 {% extends "base.html" %}
 
 {% block title %}Доступные инструменты - MCP Менеджер{% endblock %}
 {% block page_title %}Доступные Инструменты через MCPO{% endblock %}
-{% block page_subtitle %}Список инструментов, которые сейчас доступны через запущенный экземпляр MCPO{% endblock %}
+{% block page_subtitle %}Список серверов и их методов, доступных через запущенный экземпляр MCPO{% endblock %}
+
+{% block head_extra %}
+{# Стили для КОМПАКТНОГО дизайна с URL в заголовке #}
+<style>
+    .collapsible-header {
+        display: flex; /* Включаем Flexbox */
+        justify-content: space-between; /* Распределяем пространство */
+        align-items: center; /* Выравниваем по центру вертикально */
+        padding-top: 10px;
+        padding-bottom: 10px;
+        line-height: 1.4; /* Корректируем высоту строки */
+        min-height: 50px; /* Минимальная высота для вмещения элементов */
+    }
+    .collapsible-header .server-info {
+        display: flex;
+        align-items: center;
+        /* flex-grow: 0; */ /* Не растягиваем блок с иконкой и именем */
+        margin-right: 15px; /* Отступ справа от имени сервера */
+    }
+    .collapsible-header .server-info i.material-icons {
+        margin-right: 12px;
+        width: auto;
+    }
+     .collapsible-header .server-info strong {
+        font-weight: 500;
+     }
+
+     .collapsible-header .server-url-copy {
+        flex-grow: 1; /* Занимает доступное пространство */
+        flex-shrink: 1; /* Позволяет сжиматься */
+        margin: 0 10px; /* Отступы по бокам */
+        text-align: right; /* Выравнивание по правому краю */
+        overflow: hidden; /* Скрываем то, что не влезает */
+        display: flex; /* Flex для URL и кнопки */
+        align-items: center; /* Выравниваем URL и кнопку */
+        justify-content: flex-end; /* Прижимаем к правому краю */
+     }
+
+    .collapsible-header .server-url-copy .header-base-url-code {
+        display: inline-block;
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 1px 5px;
+        border-radius: 3px;
+        word-break: break-all; /* Перенос длинных URL */
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.85em; /* Меньше основного текста */
+        color: #eceff1;
+        margin-right: 8px; /* Отступ от кнопки */
+        /* Ограничение по ширине и троеточие, если нужно: */
+        /* max-width: 300px; */ /* Пример */
+        /* overflow: hidden; */
+        /* text-overflow: ellipsis; */
+        /* white-space: nowrap; */
+    }
+    .collapsible-header .copy-button-header {
+        /* Кнопка копирования в заголовке */
+        flex-shrink: 0; /* Не сжимаем кнопку */
+        height: 24px;
+        width: 24px;
+        line-height: 24px;
+        padding: 0;
+        vertical-align: middle; /* Добавлено */
+    }
+     .collapsible-header .copy-button-header i {
+        line-height: 24px;
+        font-size: 1.0rem; /* Иконка копирования чуть меньше */
+        color: #b0bec5; /* Цвет иконки */
+    }
+    .collapsible-header .copy-button-header:hover i {
+        color: #fff; /* Белый при наведении */
+    }
+
+
+     .collapsible-header .status-badge { /* Контейнер для бейджа */
+        flex-shrink: 0; /* Не сжимаем бейдж */
+        margin-left: 10px; /* Отступ слева */
+     }
+     .collapsible-header .status-badge .badge {
+        float: none; /* Убираем float */
+        margin-top: 0; /* Убираем доп. отступ */
+        position: relative; /* Для корректного отображения */
+        top: -1px; /* Небольшая коррекция по вертикали */
+     }
+
+    .collapsible-body {
+        background-color: #455a64;
+        padding: 15px 20px;
+        border-bottom: 1px solid rgba(0,0,0,0.2);
+    }
+
+    /* Убираем блок базового URL из body */
+    /* .server-base-url-block { display: none; } */
+    /* Или оставляем, если там кнопка документации */
+    .docs-button-block {
+        margin-bottom: 18px;
+        padding: 5px 0;
+        /* background-color: rgba(0,0,0, 0.1); */
+        /* border-radius: 4px; */
+        /* border-left: 3px solid #4db6ac;  Акцент для кнопки docs */
+    }
+     .docs-button-block strong {
+        display: inline-block;
+        margin-right: 10px;
+        color: #b0bec5;
+        font-weight: 500;
+        font-size: 0.9em;
+     }
+     .docs-button-block .copy-button { /* Стили кнопки доков, если оставляем в body */
+        margin-left: 0;
+        vertical-align: middle;
+        height: 26px;
+        width: 26px;
+        line-height: 26px;
+        padding: 0;
+    }
+    .docs-button-block .copy-button i {
+        line-height: 26px;
+        font-size: 1.2rem;
+        color: #cfd8dc;
+    }
+    .docs-button-block .copy-button:hover i {
+        color: #fff;
+    }
+
+
+    /* Остальные стили (methods-header, method-item-compact, etc.) остаются как были */
+    .methods-header { margin-bottom: 15px; padding-left: 5px; font-size: 1.05em; color: #cfd8dc; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
+    .methods-header i { vertical-align: bottom; margin-right: 5px; font-size: 1.2em; }
+    .method-item-compact { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
+    .method-item-compact:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .method-item-compact .method-path { display: block; margin-bottom: 5px; }
+    .method-item-compact .method-path code { background-color: rgba(0,0,0, 0.3); padding: 2px 5px; border-radius: 3px; font-size: 0.95em; color: #f5f5f5; }
+    .method-item-compact .method-path i { font-size: 1em; vertical-align: middle; margin-right: 4px; color: #90a4ae; }
+    .method-item-compact .method-details { padding-left: 25px; font-size: 0.9em; }
+    .method-item-compact .method-details p { margin: 2px 0; color: #eceff1; line-height: 1.4; }
+    .method-item-compact .method-details p.description { color: #b0bec5; font-size: 0.95em; }
+    .method-item-compact .method-details strong { font-weight: 500; color: #90a4ae; margin-right: 5px; }
+    .method-item-compact .method-details i.tiny { font-size: 1em; vertical-align: middle; margin-right: 3px; color: #90a4ae; }
+    .collapsible-body .status-message { padding: 10px; border-radius: 3px; margin-top: 10px; font-size: 0.95em; }
+    .collapsible-body .status-message.error { background-color: rgba(255, 82, 82, 0.2); border-left: 3px solid #ff5252; color: #ffcdd2; }
+    .collapsible-body .status-message.skipped { background-color: rgba(158, 158, 158, 0.2); border-left: 3px solid #9e9e9e; color: #e0e0e0; }
+    .collapsible-body .status-message.no-methods { background-color: rgba(255, 167, 38, 0.15); border-left: 3px solid #ffa726; color: #ffe0b2; }
+    .collapsible-body .status-message i { vertical-align: middle; margin-right: 5px; }
+
+</style>
+
+{# JS для копирования URL - перемещаем в head, чтобы функция была доступна до использования #}
+<script>
+    function copyToolUrlToClipboard(buttonElement, urlToCopy, event) {
+        // Предотвращаем всплытие события, чтобы не активировать collapsible
+        if (event) {
+            event.stopPropagation();
+        }
+
+        if (!navigator.clipboard) {
+            M.toast({html: 'Копирование не поддерживается.', classes: 'red lighten-1'});
+            return;
+        }
+        navigator.clipboard.writeText(urlToCopy).then(() => {
+            M.toast({html: 'URL скопирован!', classes: 'green lighten-1', displayLength: 2000});
+            const icon = buttonElement.querySelector('i');
+            const originalIcon = icon.innerText;
+            const originalColor = icon.style.color;
+            if (icon) {
+                icon.innerText = 'check';
+                icon.style.color = '#4caf50'; // Зеленый цвет для check
+            }
+            setTimeout(() => {
+                if (icon) {
+                    icon.innerText = originalIcon;
+                    icon.style.color = originalColor; // Возвращаем исходный цвет
+                }
+            }, 2000);
+        }).catch(err => {
+            console.error('Ошибка копирования URL: ', err);
+            M.toast({html: 'Не удалось скопировать URL.', classes: 'red lighten-1'});
+        });
+    }
+</script>
+{% endblock %}
 
 {% block content %}
 
-{% if error_message %} <!-- Ошибка самого менеджера при получении данных -->
+{# Сообщения об ошибках менеджера и статусе MCPO (остаются без изменений) #}
+{% if error_message %}
 <div class="card-panel red lighten-3 black-text">
     <strong><i class="material-icons left">error_outline</i>Ошибка Менеджера:</strong> {{ error_message }}
 </div>
 {% endif %}
 
 {% if tools_data.status == "RUNNING" %}
-    {% if tools_data.servers %}
-        {% for server_name, server_data in tools_data.servers.items() %}
-        <div class="row">
-            <div class="col s12">
-                <div class="card blue-grey darken-1 white-text">
-                    <div class="card-content">
-                        <span class="card-title">
-                            <i class="material-icons left">dns</i>Сервер: <strong>{{ server_name }}</strong>
-                            {% if server_data.status == "OK" %}
-                                <span class="new badge green tooltipped" data-badge-caption="OK" data-position="top" data-tooltip="Инструменты успешно загружены"></span>
-                            {% else %}
-                                <span class="new badge red tooltipped" data-badge-caption="ОШИБКА" data-position="top" data-tooltip="Не удалось загрузить инструменты"></span>
-                            {% endif %}
-                        </span>
+    {# Уведомление о базовом URL (остается без изменений) #}
+    {% if not tools_data.base_url_for_links.startswith('http://127.0.0.1') %}
+        <div class="card-panel teal lighten-5 blue-grey-text text-darken-3" style="padding: 10px; margin-bottom: 20px;">
+            <i class="material-icons left tiny">info</i>Ссылки и базовые URL генерируются с использованием публичного адреса: <code class="black-text">{{ tools_data.base_url_for_links }}</code> (из <a href="{{ url_for('ui_edit_mcpo_settings_form') }}">настроек</a>).
+        </div>
+    {% else %}
+        <div class="card-panel yellow lighten-4 blue-grey-text text-darken-3" style="padding: 10px; margin-bottom: 20px;">
+             <i class="material-icons left tiny">warning</i>Ссылки и базовые URL генерируются с использованием локального адреса: <code class="black-text">{{ tools_data.base_url_for_links }}</code>. Он может быть недоступен извне. Публичный URL можно указать в <a href="{{ url_for('ui_edit_mcpo_settings_form') }}">настройках</a>.
+        </div>
+    {% endif %}
 
+    {% if tools_data.servers %}
+        <ul class="collapsible popout blue-grey darken-3 white-text" data-collapsible="accordion">
+            {% for server_name, server_data in tools_data.servers.items() %}
+            {# Рассчитываем базовый URL сервера ЗДЕСЬ, чтобы он был доступен в заголовке #}
+            {% set server_base_url = tools_data.base_url_for_links ~ '/' ~ server_name if server_data.status != "SKIPPED" else "" %}
+            <li>
+                {# ЗАГОЛОВОК Collapsible: Имя, URL+Копировать, Статус #}
+                <div class="collapsible-header blue-grey darken-1 waves-effect waves-light">
+                    {# Блок с иконкой и именем сервера #}
+                    <div class="server-info">
+                        <i class="material-icons">dns</i>
+                        <strong>{{ server_name }}</strong>
+                    </div>
+
+                    {# Блок с Base URL и кнопкой копирования (только если не SKIPPED) #}
+                    {% if server_data.status != "SKIPPED" %}
+                    <div class="server-url-copy">
+                         <code class="header-base-url-code tooltipped"
+                               data-position="top"
+                               data-tooltip="{{ server_base_url }}">{{ server_base_url }}</code>
+                         <button class="btn-floating btn-small waves-effect waves-light transparent tooltipped copy-button-header"
+                                 data-position="top" data-tooltip="Копировать базовый URL"
+                                 onclick="event.stopPropagation(); copyToolUrlToClipboard(this, '{{ server_base_url | e }}', event);">
+                             <i class="material-icons">content_copy</i>
+                         </button>
+                    </div>
+                    {% else %}
+                     <div class="server-url-copy"></div> {# Пустой блок для сохранения структуры flex #}
+                    {% endif %}
+
+                    {# Блок со статусом #}
+                    <div class="status-badge">
                         {% if server_data.status == "OK" %}
-                            {% if server_data.tools %}
-                            <ul class="collection with-header" style="border-color: rgba(255,255,255,0.3);">
-                                <li class="collection-header blue-grey darken-2 white-text" style="border-bottom-color: rgba(255,255,255,0.3);">
-                                    <h6>Обнаруженные инструменты ({{ server_data.tools|length }})</h6>
-                                </li>
-                                {% for tool in server_data.tools %}
-                                <li class="collection-item blue-grey darken-1 white-text" style="border-bottom-color: rgba(255,255,255,0.2);">
-                                    <div>
-                                        <code>{{ server_name }}{{ tool.path }}</code>
-                                        <a href="http://127.0.0.1:{{ mcpo_port }}/{{ server_name }}/docs" target="_blank" class="secondary-content tooltipped" data-position="left" data-tooltip="Открыть документацию этого сервера">
-                                            <i class="material-icons blue-grey-text text-lighten-3">description</i>
-                                        </a>
-                                    </div>
-                                    <p class="grey-text text-lighten-2" style="font-size: 0.9em; margin-top: 5px;">
-                                        {% if tool.summary and tool.summary != "No summary" %}
-                                            {{ tool.summary }}
-                                        {% elif tool.description and tool.description != "No description" %}
-                                             {{ tool.description }}
-                                        {% else %}
-                                            <i>Нет описания</i>
-                                        {% endif %}
-                                    </p>
-                                </li>
-                                {% endfor %}
-                            </ul>
-                            {% else %}
-                            <p class="orange-text text-lighten-3"><em><i class="material-icons tiny left">info_outline</i>Инструменты не найдены для этого сервера.</em></p>
-                            {% endif %}
-                        {% else %}
-                        <p class="red-text text-lighten-3">
-                            <em><i class="material-icons tiny left">warning</i>Ошибка получения инструментов: {{ server_data.error_message }}</em>
-                        </p>
+                            <span class="new badge green tooltipped" data-badge-caption="OK" data-position="top" data-tooltip="Инструменты успешно загружены"></span>
+                        {% elif server_data.status == "SKIPPED" %}
+                             <span class="new badge grey tooltipped" data-badge-caption="Пропущен" data-position="top" data-tooltip="{{ server_data.error_message }}"></span>
+                        {% else %} {# ERROR #}
+                            <span class="new badge red tooltipped" data-badge-caption="ОШИБКА" data-position="top" data-tooltip="{{ server_data.error_message | default('Не удалось загрузить инструменты', true) }}"></span>
                         {% endif %}
                     </div>
                 </div>
-            </div>
-        </div>
-        {% endfor %}
-    {% elif not error_message %} <!-- Если статус RUNNING, но нет серверов И нет ошибки менеджера -->
+
+                {# ТЕЛО Collapsible: Детали сервера #}
+                <div class="collapsible-body">
+
+                    {# Кнопка открытия документации (оставили в теле) #}
+                    {% if server_data.status != "SKIPPED" %}
+                         <div class="docs-button-block">
+                             <strong>Документация:</strong>
+                             {% set docs_local_port = tools_data.base_url_for_links.split(':')[-1] if ':' in tools_data.base_url_for_links else '8000' %}
+                             <a href="http://127.0.0.1:{{ docs_local_port }}/{{ server_name }}/docs" target="_blank"
+                                class="btn-floating btn-small waves-effect waves-light transparent tooltipped copy-button"
+                                data-position="top" data-tooltip="Открыть документацию Swagger UI (локально)">
+                                 <i class="material-icons">description</i>
+                             </a>
+                         </div>
+                         <div class="divider" style="background-color: rgba(255,255,255,0.1); margin: 10px 0 15px 0;"></div>
+                    {% elif server_data.status == "SKIPPED" %}
+                         {# Сообщение для пропущенного сервера (остается в теле) #}
+                          <div class="status-message skipped">
+                                <i class="material-icons left tiny">skip_next</i>
+                                <span>Сервер пропущен: {{ server_data.error_message }}</span>
+                          </div>
+                    {% endif %}
+
+                    {# Обработка списка методов (инструментов) - без изменений #}
+                    {% if server_data.status == "OK" %}
+                        {% if server_data.tools %}
+                            <h6 class="methods-header">
+                                <i class="material-icons">settings_ethernet</i>Доступные методы ({{ server_data.tools|length }}):
+                            </h6>
+                            <div>
+                                {% for tool in server_data.tools %}
+                                    <div class="method-item-compact">
+                                        <div class="method-path">
+                                            <i class="material-icons tiny">route</i>
+                                            <code>{{ tool.path }}</code>
+                                        </div>
+                                        <div class="method-details">
+                                            {% if tool.summary and tool.summary != "No summary" %}
+                                            <p><i class="material-icons tiny">short_text</i><strong>Заголовок:</strong> {{ tool.summary }}</p>
+                                            {% endif %}
+                                            {% if tool.description and tool.description != "No description" %}
+                                            <p class="description"><i class="material-icons tiny">description</i><strong>Описание:</strong> {{ tool.description }}</p>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                             <div class="status-message no-methods">
+                                <i class="material-icons left tiny">info_outline</i>
+                                Методы не найдены для этого сервера в его OpenAPI спецификации.
+                            </div>
+                        {% endif %}
+                    {% elif server_data.status == "ERROR" %}
+                         <div class="status-message error">
+                            <i class="material-icons left tiny">warning</i>
+                            <span>Ошибка получения информации о методах: {{ server_data.error_message }}</span>
+                         </div>
+                    {% endif %}
+
+                </div> {# Конец collapsible-body #}
+            </li>
+            {% endfor %}
+        </ul> {# Конец collapsible #}
+
+    {% elif not error_message %}
         <div class="card-panel orange lighten-4 black-text">
             <i class="material-icons left">info_outline</i>
-            MCPO запущен, но не найдено активных определений серверов в конфигурации или не удалось получить информацию о них.
+            MCPO запущен, но не найдено активных определений серверов...
         </div>
     {% endif %}
+
 {% elif tools_data.status == "STOPPED" %}
     <div class="card-panel orange lighten-4 black-text">
         <i class="material-icons left">power_settings_new</i>
-        Процесс MCPO сейчас остановлен. Запустите его на странице <a href="{{ url_for('ui_root') }}">Серверы и Управление</a>, чтобы увидеть доступные инструменты.
+        Процесс MCPO сейчас остановлен...
     </div>
-{% else %} {# ERROR или UNKNOWN #}
+{% else %}
     <div class="card-panel red lighten-3 black-text">
         <i class="material-icons left">error_outline</i>
-        Процесс MCPO не работает корректно (Статус: {{ tools_data.status }}). Проверьте логи и статус на странице <a href="{{ url_for('ui_root') }}">Серверы и Управление</a>.
+        Процесс MCPO не работает корректно...
     </div>
 {% endif %}
 
+{% endblock %}
+
+{# JS для инициализации компонентов #}
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltips = document.querySelectorAll('.tooltipped');
+        M.Tooltip.init(tooltips);
+
+        var collapsibles = document.querySelectorAll('.collapsible');
+        M.Collapsible.init(collapsibles, {
+            accordion: true
+        });
+    });
+</script>
 {% endblock %}

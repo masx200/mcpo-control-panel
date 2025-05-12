@@ -73,3 +73,28 @@ opacity: 1;
 nav .sidenav-trigger i {
   color: white;
 }
+
+pre.log-container {
+  background-color: #263238; /* Темный фон Material Design (Blue Grey Darken 4) */
+  color: #eceff1; /* Светлый текст (Blue Grey Lighten 5) */
+  padding: 15px;
+  border-radius: 4px;
+  max-height: 60vh; /* Ограничиваем высоту, чтобы не занимало весь экран */
+  overflow-y: auto; /* Включаем вертикальную прокрутку */
+  font-family: 'Courier New', Courier, monospace; /* Моноширинный шрифт */
+  font-size: 0.9em; /* Немного уменьшим шрифт */
+  white-space: pre-wrap;   /* Сохраняет пробелы/переносы, но переносит длинные строки */
+  word-break: break-all;   /* Принудительный перенос очень длинных слов без пробелов */
+  border: 1px solid #37474f; /* Чуть более светлая граница (Blue Grey Darken 3) */
+}
+
+/* Стиль для тега code внутри pre (обычно не нужен, т.к. pre наследует стили) */
+pre.log-container code {
+  display: block; /* Убедимся, что code занимает всю ширину pre */
+  /* Можно убрать фон/паддинг отсюда, если стилизуем pre */
+}
+
+/* Фикс для sidenav trigger, чтобы он был видимым на фоне nav */
+nav .sidenav-trigger i {
+color: white;
+}

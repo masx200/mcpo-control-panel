@@ -1,107 +1,174 @@
 <!-- ================================================ -->
-<!-- FILE: src/mcp_manager_ui/ui/templates/logs.html  -->
-<!-- (Новый файл для страницы логов)                -->
+<!-- FILE: src/mcp_manager_ui/ui/templates/logs.html -->
 <!-- ================================================ -->
 {% extends "base.html" %}
 
 {% block title %}Логи MCPO - MCP Менеджер{% endblock %}
 {% block page_title %}Логи процесса MCPO{% endblock %}
-{% block page_subtitle %}Просмотр последних записей из лог-файла mcpo{% endblock %}
+{% block page_subtitle %}Просмотр последних записей из файла логов mcpo{% endblock %}
+
+{% block head_extra %}
+<style>
+    .log-container {
+        display: block;
+        background-color: #263238;
+        color: #eceff1;
+        padding: 15px;
+        border-radius: 4px;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 0.9em;
+        min-height: 200px;
+        max-height: 65vh;
+        overflow-y: auto;
+        white-space: pre-wrap;
+        word-break: break-word;
+        border: 1px solid rgba(0,0,0,0.2);
+    }
+    .card-action {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        padding: 15px 24px;
+    }
+    .auto-scroll-switch {
+        margin-top: 5px;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
+
+{# Секция статуса MCPO #}
 <div class="row">
     <div class="col s12">
-        <div class="card">
-            <div class="card-content">
-                <span class="card-title">Логи</span>
-                {% if not mcpo_settings.log_file_path %}
-                <p class="orange-text text-darken-2">
-                    <i class="material-icons left tiny">warning</i>
-                    Путь к файлу логов MCPO не указан в <a href="{{ url_for('ui_edit_mcpo_settings_form') }}">настройках</a>.
-                </p>
-                {% elif not log_file_path_exists %}
-                 <p class="orange-text text-darken-2">
-                    <i class="material-icons left tiny">warning</i>
-                    Файл логов MCPO не найден по указанному пути: <code>{{ mcpo_settings.log_file_path }}</code>.
-                    Проверьте <a href="{{ url_for('ui_edit_mcpo_settings_form') }}">настройки</a> или убедитесь, что процесс mcpo был запущен и создал лог-файл.
-                </p>
-                {% else %}
-                <div style="margin-bottom: 15px;">
-                    <span class="grey-text text-darken-1">Путь к файлу: <code>{{ mcpo_settings.log_file_path }}</code></span>
-                    <div class="switch right" style="padding-top: 5px;">
-                        <label>
-                            Автообновление выкл.
-                            <input type="checkbox" id="log-auto-refresh-toggle"
-                                   {% if mcpo_settings.log_auto_refresh_enabled %}checked{% endif %}
-                                   onchange="toggleLogAutoRefresh(this.checked)">
-                            <span class="lever"></span>
-                            Автообновление вкл.
-                        </label>
-                    </div>
-                </div>
-
-                <div id="mcpo-logs-container"
-                     style="max-height: 60vh; overflow-y: auto; background-color: #263238; color: #eceff1; padding: 15px; border-radius: 4px; font-family: 'Courier New', Courier, monospace; font-size: 0.9em;"
-                     hx-get="{{ url_for('get_mcpo_process_logs_html') }}?lines=100" {# Загружаем больше строк по умолчанию #}
+        <div class="card blue-grey lighten-5">
+             <div class="card-content" style="padding-bottom: 10px;">
+                <span class="card-title blue-grey-text text-darken-3">Текущий статус MCPO</span>
+                <div id="mcpo-status-indicator-logs"
+                     hx-get="{{ url_for('get_mcpo_process_status_html') }}"
+                     hx-trigger="load, every 5s"
+                     hx-target="this"
                      hx-swap="innerHTML"
-                     {% if mcpo_settings.log_auto_refresh_enabled %}
-                        hx-trigger="load, every {{ mcpo_settings.log_auto_refresh_interval_seconds }}s"
-                     {% else %}
-                        hx-trigger="load"
-                     {% endif %}
-                     >
-                    <p class="grey-text text-lighten-2">Загрузка логов...</p>
+                     class="blue-grey-text text-darken-2"
+                     style="min-height: 50px;">
+                    <p>Загрузка статуса...</p>
                 </div>
-                 <button class="btn-small waves-effect waves-light blue-grey lighten-1"
-                        style="margin-top: 15px;"
-                        hx-get="{{ url_for('get_mcpo_process_logs_html') }}?lines=100"
-                        hx-target="#mcpo-logs-container"
-                        hx-swap="innerHTML"
-                        hx-indicator="#log-refresh-spinner">
-                    <i class="material-icons left">refresh</i>Обновить сейчас
-                </button>
-                <div id="log-refresh-spinner" class="htmx-indicator preloader-wrapper tiny active" style="vertical-align: middle; margin-left: 10px; width: 18px; height: 18px;">
-                    <div class="spinner-layer spinner-blue-only">
-                        <div class="circle-clipper left"><div class="circle"></div></div>
-                        <div class="gap-patch"><div class="circle"></div></div>
-                        <div class="circle-clipper right"><div class="circle"></div></div>
-                    </div>
-                </div>
-                {% endif %}
             </div>
         </div>
     </div>
 </div>
 
+{# Секция логов #}
+<div class="row">
+    <div class="col s12">
+        <div class="card">
+            <div class="card-content">
+                <span class="card-title">Содержимое лог-файла</span>
+                <p class="grey-text text-darken-1">
+                    Путь к файлу:
+                    {% if mcpo_settings.log_file_path %}
+                        <code>{{ mcpo_settings.log_file_path }}</code>
+                        {% if log_file_path_exists %}
+                            <span class="green-text text-darken-1">(Файл найден)</span>
+                        {% else %}
+                            <span class="red-text text-darken-1">(Файл НЕ найден!)</span>
+                        {% endif %}
+                    {% else %}
+                        <span class="orange-text text-darken-1">Путь к лог-файлу не настроен в <a href="{{ url_for('ui_edit_mcpo_settings_form') }}">настройках</a>.</span>
+                    {% endif %}
+                </p>
+                {% if mcpo_settings.log_auto_refresh_enabled %}
+                    <p class="grey-text text-darken-1" style="margin-bottom: 0;">
+                        Автообновление включено каждые <code>{{ mcpo_settings.log_auto_refresh_interval_seconds }}</code> секунд.
+                    </p>
+                {% else %}
+                     <p class="grey-text text-darken-1" style="margin-bottom: 0;">
+                        Автообновление выключено. Нажмите "Обновить" для просмотра последних логов.
+                    </p>
+                {% endif %}
+
+                {% set trigger_interval = "every " ~ mcpo_settings.log_auto_refresh_interval_seconds ~ "s" if mcpo_settings.log_auto_refresh_enabled else "never" %}
+
+                <div id="mcpo-log-content-wrapper" style="margin-top: 20px;">
+                     <pre class="log-container" id="log-container">
+                        <code id="log-code-block"
+                              hx-get="{{ url_for('api_get_logs_content_html') }}?lines=200"
+                              hx-trigger="load, {{ trigger_interval }}"
+                              hx-target="this"
+                              hx-swap="innerHTML"
+                              hx-indicator="#log-spinner">Загрузка логов...</code>
+                     </pre>
+                    <div id="log-spinner" class="htmx-indicator center-align" style="margin-top: 10px;">
+                        <div class="preloader-wrapper small active">
+                            <div class="spinner-layer spinner-blue-only">
+                                <div class="circle-clipper left"><div class="circle"></div></div>
+                                <div class="gap-patch"><div class="circle"></div></div>
+                                <div class="circle-clipper right"><div class="circle"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-action">
+                 <button class="btn waves-effect waves-light blue-grey lighten-1"
+                         hx-get="{{ url_for('api_get_logs_content_html') }}?lines=200"
+                         hx-target="#log-code-block"
+                         hx-swap="innerHTML"
+                         hx-indicator="#log-spinner">
+                     <i class="material-icons left">refresh</i>Обновить логи
+                 </button>
+
+                 <div class="switch auto-scroll-switch">
+                    <label class="blue-grey-text text-darken-2">
+                        Автопрокрутка Выкл.
+                        <input type="checkbox" id="auto-scroll-switch" checked>
+                        <span class="lever"></span>
+                        Вкл.
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
 <script>
-    function toggleLogAutoRefresh(enabled) {
-        const logsContainer = document.getElementById('mcpo-logs-container');
-        if (!logsContainer) return;
-
-        // Чтобы изменение настройки автообновления сохранилось,
-        // нужно отправить запрос на сервер для обновления McpoSettings.
-        // Сейчас мы просто меняем поведение на клиенте.
-        // Для сохранения нужно было бы добавить hx-post на чекбокс
-        // и обработчик на сервере.
-
-        if (enabled) {
-            const interval = {{ mcpo_settings.log_auto_refresh_interval_seconds }}; // Берем из настроек
-            logsContainer.setAttribute('hx-trigger', `load, every ${interval}s`);
-            // Форсируем перезагрузку триггеров HTMX для этого элемента
-            htmx.process(logsContainer);
-             M.toast({html: `Автообновление логов включено (каждые ${interval} сек.)`, classes: 'green lighten-1'});
-        } else {
-            logsContainer.setAttribute('hx-trigger', 'load'); // Только при загрузке страницы
-            htmx.process(logsContainer);
-            M.toast({html: 'Автообновление логов выключено', classes: 'orange darken-1'});
-        }
-        // Важно: чтобы это изменение сохранялось между перезагрузками страницы,
-        // значение чекбокса и интервал должны сохраняться в McpoSettings на сервере.
-        // Сейчас `onchange` влияет только на текущую сессию в браузере.
-        // Для персистентности: чекбокс должен через hx-post обновлять McpoSettings.
+document.addEventListener('DOMContentLoaded', function() {
+    const logContainer = document.getElementById('log-container');
+    const autoScrollSwitch = document.getElementById('auto-scroll-switch');
+    
+    if (!logContainer || !autoScrollSwitch) {
+        console.error("Не удалось найти необходимые элементы для автопрокрутки");
+        return;
     }
-
-    // При загрузке страницы, если автообновление включено, убедимся, что триггер установлен.
-    // Это уже делается через Jinja в hx-trigger.
+    
+    // Функция для прокрутки вниз
+    function scrollToBottom() {
+        if (autoScrollSwitch.checked) {
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+    }
+    
+    // Обработчик события после обновления содержимого через HTMX
+    document.body.addEventListener('htmx:afterSwap', function(event) {
+        if (event.detail.target.id === 'log-code-block') {
+            setTimeout(scrollToBottom, 50);
+        }
+    });
+    
+    // Начальная прокрутка
+    scrollToBottom();
+    
+    // Обработчик изменения состояния переключателя
+    autoScrollSwitch.addEventListener('change', function() {
+        if (autoScrollSwitch.checked) {
+            scrollToBottom();
+        }
+    });
+});
 </script>
 {% endblock %}

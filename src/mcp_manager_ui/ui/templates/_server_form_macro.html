@@ -1,0 +1,147 @@
+<!-- ================================================ -->
+<!-- FILE: src/mcp_manager_ui/ui/templates/_server_form_macro.html -->
+<!-- (Возвращаем onchange в select) -->
+<!-- ================================================ -->
+{% macro render_server_form(
+    action_url,
+    submit_button_text,
+    server={},
+    error=None,
+    is_add_form=False,
+    request=None,
+    cancel_url=None
+) %}
+
+{% set form_prefix = 'single-add-' if is_add_form else 'edit-' %}
+{% set server_data = server if server else {} %}
+
+{% if error %}
+<div class="card-panel red lighten-4 red-text text-darken-4" style="padding: 10px; margin-bottom: 15px;">
+    <i class="material-icons left tiny">error_outline</i><strong>Ошибка:</strong> {{ error }}
+</div>
+{% endif %}
+
+<div id="{{ form_prefix }}form-wrapper">
+<form method="post" action="{{ action_url }}">
+    <div class="row">
+        <div class="input-field col s12 l6">
+            <i class="material-icons prefix">label</i>
+            <input type="text" id="{{ form_prefix }}name" name="name" value="{{ server_data.get('name', '') }}" class="validate" required>
+            <label for="{{ form_prefix }}name">Имя сервера (уникальное)</label>
+        </div>
+        <div class="input-field col s12 l6">
+             <i class="material-icons prefix">settings_ethernet</i>
+             <!-- ВОЗВРАЩАЕМ onchange -->
+             <select id="{{ form_prefix }}server_type" name="server_type" required>
+                <option value="" disabled {% if not server_data.get('server_type') %}selected{% endif %}>Выберите тип</option>
+                <option value="stdio" {% if server_data.get('server_type') == 'stdio' %}selected{% endif %}>stdio</option>
+                <option value="sse" {% if server_data.get('server_type') == 'sse' %}selected{% endif %}>sse</option>
+                <option value="streamable_http" {% if server_data.get('server_type') == 'streamable_http' %}selected{% endif %}>streamable_http</option>
+             </select>
+             <label>Тип сервера</label>
+        </div>
+    </div>
+
+    <!-- Блок для stdio -->
+    <div class="row blue-grey lighten-5" id="{{ form_prefix }}stdio-fields-container" style="padding: 15px 15px 5px 15px; border-radius: 5px; margin-bottom: 20px; display: none;">
+        <!-- ... (содержимое stdio без изменений) ... -->
+        <h6 class="blue-grey-text text-darken-2" style="margin-top: 0; margin-bottom: 20px;">
+            <i class="material-icons tiny left">terminal</i>Stdio Опции
+        </h6>
+        <div class="input-field col s12">
+            <i class="material-icons prefix">code</i>
+            <input type="text" id="{{ form_prefix }}command" name="command" value="{{ server_data.get('command', '') }}">
+            <label for="{{ form_prefix }}command">Команда</label>
+            <span class="helper-text">Напр., npx, uvx, /путь/к/файлу (Обязательно для stdio)</span>
+        </div>
+        <div class="col s12" style="margin-top:15px;">
+            <p class="blue-grey-text text-darken-1" style="font-size: 0.9rem; margin-bottom: 5px;">Аргументы команды:</p>
+            <div id="{{ form_prefix }}args-list-container">
+                {% for arg_val in server_data.get('args', []) %}
+                <div class="row dynamic-field-row" style="margin-bottom: 5px;">
+                    <div class="input-field col s10 m10 l10" style="margin-top:0; margin-bottom:0;">
+                        <input type="text" name="arg_item[]" value="{{ arg_val }}" placeholder="Аргумент">
+                    </div>
+                    <div class="col s2 m2 l2" style="padding-top: 10px;">
+                        <button type="button" class="btn-floating btn-small waves-effect waves-light red lighten-1" onclick="removeDynamicField(this)" title="Удалить аргумент">
+                            <i class="material-icons">remove</i>
+                        </button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <button type="button" class="btn-small waves-effect waves-light blue-grey lighten-1" onclick="addArgumentField('{{ form_prefix }}')" style="margin-top: 5px;">
+                <i class="material-icons left">add</i>Добавить аргумент
+            </button>
+        </div>
+        <div class="col s12" style="margin-top:20px; margin-bottom: 15px;">
+            <p class="blue-grey-text text-darken-1" style="font-size: 0.9rem; margin-bottom: 5px;">Переменные окружения:</p>
+            <div id="{{ form_prefix }}env-vars-list-container">
+                 {% for key, value in server_data.get('env_vars', {}).items() %}
+                 <div class="row dynamic-field-row" style="margin-bottom: 5px;">
+                     <div class="input-field col s5 m5 l5" style="margin-top:0; margin-bottom:0;">
+                         <input type="text" name="env_key[]" value="{{ key }}" placeholder="Имя переменной">
+                     </div>
+                     <div class="input-field col s5 m5 l5" style="margin-top:0; margin-bottom:0;">
+                         <input type="text" name="env_value[]" value="{{ value }}" placeholder="Значение">
+                     </div>
+                     <div class="col s2 m2 l2" style="padding-top: 10px;">
+                         <button type="button" class="btn-floating btn-small waves-effect waves-light red lighten-1" onclick="removeDynamicField(this)" title="Удалить переменную">
+                             <i class="material-icons">remove</i>
+                         </button>
+                     </div>
+                 </div>
+                 {% endfor %}
+            </div>
+             <button type="button" class="btn-small waves-effect waves-light blue-grey lighten-1" onclick="addEnvVarField('{{ form_prefix }}')" style="margin-top: 5px;">
+                <i class="material-icons left">add</i>Добавить переменную
+            </button>
+        </div>
+    </div>
+
+    <!-- Блок для SSE / Streamable HTTP -->
+    <div class="row blue-grey lighten-5" id="{{ form_prefix }}http-fields-container" style="padding: 15px; border-radius: 5px; margin-bottom: 20px; display: none;">
+        <!-- ... (содержимое http без изменений) ... -->
+         <h6 class="blue-grey-text text-darken-2" style="margin-top: 0; margin-bottom: 20px;">
+            <i class="material-icons tiny left">link</i>SSE / Streamable HTTP Опции
+         </h6>
+         <div class="input-field col s12">
+             <i class="material-icons prefix">http</i>
+             <input type="url" id="{{ form_prefix }}url" name="url" class="validate" value="{{ server_data.get('url') if server_data.get('url') is not none else '' }}">
+             <label for="{{ form_prefix }}url">URL Сервера</label>
+             <span class="helper-text">Напр., http://127.0.0.1:8001/sse (Обязательно для SSE/HTTP)</span>
+         </div>
+    </div>
+
+    <!-- Чекбокс "Включить" -->
+    <div class="row">
+       <!-- ... (содержимое без изменений) ... -->
+        <div class="col s12" style="margin-top: 15px;">
+             <div class="switch">
+                <label>
+                    Выключен
+                    <input type="checkbox" id="{{ form_prefix }}is_enabled" name="is_enabled" value="true" {% if server_data.get('is_enabled') %}checked{% endif %}>
+                    <span class="lever"></span>
+                    Включен (в конфиг mcpo)
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Кнопки -->
+    <div class="row" style="margin-top: 30px;">
+       <!-- ... (содержимое без изменений) ... -->
+        <div class="col s12">
+             <button class="btn waves-effect waves-light blue darken-1" type="submit" name="action">
+                 <i class="material-icons left">save</i>{{ submit_button_text | default('Сохранить') }}
+             </button>
+             {% if not is_add_form and cancel_url %}
+             <a href="{{ cancel_url }}" class="btn waves-effect waves-light grey lighten-1 black-text">
+                  <i class="material-icons left">cancel</i>Отмена
+             </a>
+             {% endif %}
+        </div>
+    </div>
+</form>
+</div>
+{% endmacro %}

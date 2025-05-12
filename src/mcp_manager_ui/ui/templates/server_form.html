@@ -1,59 +1,71 @@
 <!-- ================================================ -->
 <!-- FILE: src/mcp_manager_ui/ui/templates/server_form.html -->
-<!-- (Значительные изменения для динамических полей) -->
+<!-- (Убраны теги script, инициализация в main.js) -->
 <!-- ================================================ -->
-{% extends "base.html" %}
-
-{% block title %}Редактирование сервера - MCP Менеджер{% endblock %}
-{% block page_title %}Редактирование определения сервера{% endblock %}
-{% block page_subtitle %}Измените параметры для сервера "{% if server %}{{ server.name }}{% endif %}"{% endblock %}
-
-{% block content %}
-
-{% if error %}
-<div class="card-panel red lighten-3 black-text">
-    <strong><i class="material-icons left tiny">error_outline</i>Ошибка:</strong> {{ error }}
-</div>
-{% endif %}
-
-<div class="row">
-    <form class="col s12" method="post" action="{{ request.url.path }}">
+{#
+    Шаблон формы для добавления или редактирования определения сервера.
+    Ожидает переменные:
+    - request: объект запроса FastAPI
+    - server: словарь с данными сервера (для редактирования или ререндера при ошибке), или None/пустой словарь (для добавления)
+    - error: сообщение об ошибке (для отображения над формой, если передано)
+    - action_url: URL, куда будет отправлена форма
+    - form_title: (опционально) Заголовок для формы (напр., "Редактирование X" или "Добавить сервер")
+    - submit_button_text: Текст на кнопке отправки
+    - is_add_form: (опционально, default=False) Флаг, указывающий, является ли это формой добавления
+    #}
+    
+    {% set form_prefix = 'single-add-' if is_add_form else 'edit-' %} {# Префикс для ID элементов, чтобы избежать конфликтов #}
+    {% set server_data = server if server else {} %} {# Используем пустой словарь, если server не передан #}
+    
+    {% if form_title %}
+        <h6 class="blue-grey-text text-darken-1" style="margin-bottom: 15px;">{{ form_title }}</h6>
+    {% endif %}
+    
+    {% if error %}
+    <div class="card-panel red lighten-4 red-text text-darken-4" style="padding: 10px; margin-bottom: 15px;">
+        <i class="material-icons left tiny">error_outline</i><strong>Ошибка:</strong> {{ error }}
+    </div>
+    {% endif %}
+    
+    <div id="{{ form_prefix }}form-wrapper">
+    <form method="post" action="{{ action_url }}">
         <div class="row">
             <div class="input-field col s12 l6">
                 <i class="material-icons prefix">label</i>
-                <input type="text" id="name" name="name" value="{{ server.name if server else '' }}" class="validate" required>
-                <label for="name">Имя сервера (уникальное)</label>
+                <input type="text" id="{{ form_prefix }}name" name="name" value="{{ server_data.get('name', '') }}" class="validate" required>
+                <label for="{{ form_prefix }}name">Имя сервера (уникальное)</label>
             </div>
             <div class="input-field col s12 l6">
                  <i class="material-icons prefix">settings_ethernet</i>
-                 <select id="server_type" name="server_type" required onchange="toggleServerTypeSpecificFields(this.value)">
-                    <option value="" disabled {% if not server or not server.server_type %}selected{% endif %}>Выберите тип</option>
-                    <option value="stdio" {% if server and server.server_type == 'stdio' %}selected{% endif %}>stdio</option>
-                    <option value="sse" {% if server and server.server_type == 'sse' %}selected{% endif %}>sse</option>
-                    <option value="streamable_http" {% if server and server.server_type == 'streamable_http' %}selected{% endif %}>streamable_http</option>
+                 {# Убираем onchange отсюда, он теперь в main.js через listener #}
+                 <select id="{{ form_prefix }}server_type" name="server_type" required>
+                    <option value="" disabled {% if not server_data.get('server_type') %}selected{% endif %}>Выберите тип</option>
+                    <option value="stdio" {% if server_data.get('server_type') == 'stdio' %}selected{% endif %}>stdio</option>
+                    <option value="sse" {% if server_data.get('server_type') == 'sse' %}selected{% endif %}>sse</option>
+                    <option value="streamable_http" {% if server_data.get('server_type') == 'streamable_http' %}selected{% endif %}>streamable_http</option>
                  </select>
                  <label>Тип сервера</label>
             </div>
         </div>
-
+    
         <!-- Блок для stdio -->
-        <div class="row blue-grey lighten-5" id="stdio-fields-container" style="padding: 15px 15px 5px 15px; border-radius: 5px; margin-bottom: 20px;">
+        <div class="row blue-grey lighten-5" id="{{ form_prefix }}stdio-fields-container" style="padding: 15px 15px 5px 15px; border-radius: 5px; margin-bottom: 20px; display: none;">
             <h6 class="blue-grey-text text-darken-2" style="margin-top: 0; margin-bottom: 20px;">
                 <i class="material-icons tiny left">terminal</i>Stdio Опции
             </h6>
             <div class="input-field col s12">
                 <i class="material-icons prefix">code</i>
-                <input type="text" id="command" name="command" value="{{ server.command if server and server.command else '' }}">
-                <label for="command">Команда</label>
+                <input type="text" id="{{ form_prefix }}command" name="command" value="{{ server_data.get('command', '') }}">
+                <label for="{{ form_prefix }}command">Команда</label>
                 <span class="helper-text">Напр., npx, uvx, /путь/к/файлу (Обязательно для stdio)</span>
             </div>
-
+    
             <!-- Динамические поля для аргументов -->
             <div class="col s12" style="margin-top:15px;">
                 <p class="blue-grey-text text-darken-1" style="font-size: 0.9rem; margin-bottom: 5px;">Аргументы команды:</p>
-                <div id="args-list-container">
-                    {% if server and server.args %}
-                        {% for arg_val in server.args %}
+                <div id="{{ form_prefix }}args-list-container">
+                    {% if server_data.get('args') %}
+                        {% for arg_val in server_data.get('args', []) %}
                         <div class="row dynamic-field-row" style="margin-bottom: 5px;">
                             <div class="input-field col s10 m10 l10" style="margin-top:0; margin-bottom:0;">
                                 <input type="text" name="arg_item[]" value="{{ arg_val }}" placeholder="Аргумент">
@@ -67,17 +79,17 @@
                         {% endfor %}
                     {% endif %}
                 </div>
-                <button type="button" class="btn-small waves-effect waves-light blue-grey lighten-1" onclick="addArgumentField()" style="margin-top: 5px;">
+                <button type="button" class="btn-small waves-effect waves-light blue-grey lighten-1" onclick="addArgumentField('{{ form_prefix }}')" style="margin-top: 5px;">
                     <i class="material-icons left">add</i>Добавить аргумент
                 </button>
             </div>
-
+    
             <!-- Динамические поля для переменных окружения -->
-            <div class="col s12" style="margin-top:20px;">
+            <div class="col s12" style="margin-top:20px; margin-bottom: 15px;">
                 <p class="blue-grey-text text-darken-1" style="font-size: 0.9rem; margin-bottom: 5px;">Переменные окружения:</p>
-                <div id="env-vars-list-container">
-                    {% if server and server.env_vars %}
-                        {% for key, value in server.env_vars.items() %}
+                <div id="{{ form_prefix }}env-vars-list-container">
+                     {% if server_data.get('env_vars') %}
+                        {% for key, value in server_data.get('env_vars', {}).items() %}
                         <div class="row dynamic-field-row" style="margin-bottom: 5px;">
                             <div class="input-field col s5 m5 l5" style="margin-top:0; margin-bottom:0;">
                                 <input type="text" name="env_key[]" value="{{ key }}" placeholder="Имя переменной">
@@ -92,129 +104,53 @@
                             </div>
                         </div>
                         {% endfor %}
-                    {% endif %}
+                     {% endif %}
                 </div>
-                 <button type="button" class="btn-small waves-effect waves-light blue-grey lighten-1" onclick="addEnvVarField()" style="margin-top: 5px;">
+                 <button type="button" class="btn-small waves-effect waves-light blue-grey lighten-1" onclick="addEnvVarField('{{ form_prefix }}')" style="margin-top: 5px;">
                     <i class="material-icons left">add</i>Добавить переменную
                 </button>
             </div>
         </div>
-
+    
         <!-- Блок для SSE / Streamable HTTP -->
-        <div class="row blue-grey lighten-5" id="http-fields-container" style="padding: 15px; border-radius: 5px; margin-bottom: 20px;">
+        <div class="row blue-grey lighten-5" id="{{ form_prefix }}http-fields-container" style="padding: 15px; border-radius: 5px; margin-bottom: 20px; display: none;">
              <h6 class="blue-grey-text text-darken-2" style="margin-top: 0; margin-bottom: 20px;">
                 <i class="material-icons tiny left">link</i>SSE / Streamable HTTP Опции
              </h6>
              <div class="input-field col s12">
                  <i class="material-icons prefix">http</i>
-                 <input type="url" id="url" name="url" class="validate" value="{{ server.url if server and server.url else '' }}">
-                 <label for="url">URL Сервера</label>
+                 <input type="url" id="{{ form_prefix }}url" name="url" class="validate" value="{{ server_data.get('url', '') }}">
+                 <label for="{{ form_prefix }}url">URL Сервера</label>
                  <span class="helper-text">Напр., http://127.0.0.1:8001/sse (Обязательно для SSE/HTTP)</span>
              </div>
         </div>
-
+    
         <!-- Чекбокс "Включить" -->
         <div class="row">
             <div class="col s12" style="margin-top: 15px;">
                  <div class="switch">
                     <label>
                         Выключен
-                        <input type="checkbox" id="is_enabled" name="is_enabled" value="true" {% if server and server.is_enabled %}checked{% endif %}>
+                        <input type="checkbox" id="{{ form_prefix }}is_enabled" name="is_enabled" value="true" {% if server_data.get('is_enabled') %}checked{% endif %}>
                         <span class="lever"></span>
                         Включен (в конфиг mcpo)
                     </label>
                 </div>
             </div>
         </div>
-
+    
         <!-- Кнопки -->
         <div class="row" style="margin-top: 30px;">
             <div class="col s12">
                  <button class="btn waves-effect waves-light blue darken-1" type="submit" name="action">
-                     <i class="material-icons left">save</i>Обновить определение
+                     <i class="material-icons left">save</i>{{ submit_button_text | default('Сохранить') }}
                  </button>
-                 <a href="{{ url_for('ui_root') }}" class="btn waves-effect waves-light grey lighten-1 black-text">
-                      <i class="material-icons left">cancel</i>Отмена
-                 </a>
+                 {% if not is_add_form %}
+                     <a href="{{ url_for('ui_root') }}" class="btn waves-effect waves-light grey lighten-1 black-text">
+                          <i class="material-icons left">cancel</i>Отмена
+                     </a>
+                 {% endif %}
             </div>
         </div>
     </form>
-</div>
-
-<script>
-    function toggleServerTypeSpecificFields(serverType) {
-        const stdioFieldsContainer = document.getElementById('stdio-fields-container');
-        const httpFieldsContainer = document.getElementById('http-fields-container');
-        const commandInput = document.getElementById('command');
-        const urlInput = document.getElementById('url');
-
-        stdioFieldsContainer.style.display = 'none';
-        httpFieldsContainer.style.display = 'none';
-        if (commandInput) commandInput.required = false;
-        if (urlInput) urlInput.required = false;
-
-        if (serverType === 'stdio') {
-            stdioFieldsContainer.style.display = 'block';
-            if (commandInput) commandInput.required = true;
-        } else if (serverType === 'sse' || serverType === 'streamable_http') {
-            httpFieldsContainer.style.display = 'block';
-            if (urlInput) urlInput.required = true;
-        }
-    }
-
-    function addArgumentField() {
-        const container = document.getElementById('args-list-container');
-        const newFieldRow = document.createElement('div');
-        newFieldRow.classList.add('row', 'dynamic-field-row');
-        newFieldRow.style.marginBottom = '5px';
-        newFieldRow.innerHTML = `
-            <div class="input-field col s10 m10 l10" style="margin-top:0; margin-bottom:0;">
-                <input type="text" name="arg_item[]" placeholder="Аргумент">
-            </div>
-            <div class="col s2 m2 l2" style="padding-top: 10px;">
-                <button type="button" class="btn-floating btn-small waves-effect waves-light red lighten-1" onclick="removeDynamicField(this)" title="Удалить аргумент">
-                    <i class="material-icons">remove</i>
-                </button>
-            </div>
-        `;
-        container.appendChild(newFieldRow);
-    }
-
-    function addEnvVarField() {
-        const container = document.getElementById('env-vars-list-container');
-        const newFieldRow = document.createElement('div');
-        newFieldRow.classList.add('row', 'dynamic-field-row');
-        newFieldRow.style.marginBottom = '5px';
-        newFieldRow.innerHTML = `
-            <div class="input-field col s5 m5 l5" style="margin-top:0; margin-bottom:0;">
-                <input type="text" name="env_key[]" placeholder="Имя переменной">
-            </div>
-            <div class="input-field col s5 m5 l5" style="margin-top:0; margin-bottom:0;">
-                <input type="text" name="env_value[]" placeholder="Значение">
-            </div>
-            <div class="col s2 m2 l2" style="padding-top: 10px;">
-                <button type="button" class="btn-floating btn-small waves-effect waves-light red lighten-1" onclick="removeDynamicField(this)" title="Удалить переменную">
-                    <i class="material-icons">remove</i>
-                </button>
-            </div>
-        `;
-        container.appendChild(newFieldRow);
-    }
-
-    function removeDynamicField(buttonElement) {
-        // Удаляем родительский .dynamic-field-row
-        buttonElement.closest('.dynamic-field-row').remove();
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const serverTypeSelect = document.getElementById('server_type');
-        if (serverTypeSelect) {
-            // Materialize select уже инициализируется через M.AutoInit() в base.html
-            toggleServerTypeSpecificFields(serverTypeSelect.value);
-        }
-        // M.updateTextFields(); // Может понадобиться, если поля input не отображают label корректно
-                               // после предзаполнения Jinja. Но обычно Materialize справляется.
-    });
-</script>
-
-{% endblock %}
+    </div>
