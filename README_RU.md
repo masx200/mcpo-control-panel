@@ -76,13 +76,11 @@ uv pip install mcpo-control-panel
 
 *   Python 3.11 или выше.
 
-### Способ 3: Из PyPI (с использованием pip)
-
 ```bash
 pip install mcpo-control-panel
 ```
 
-### Способ 4: Из исходного кода (для разработки)
+### Способ 3: Из исходного кода (для разработки)
 
 1.  Клонируйте репозиторий:
     ```bash
@@ -93,6 +91,24 @@ pip install mcpo-control-panel
     ```bash
     pip install -e .
     ```
+    
+    ### Способ 4: Использование Docker
+    
+    Вы также можете запустить MCPO Control Panel с помощью Docker. Это удобный способ запуска приложения в изолированной среде.
+    
+    1.  **Соберите Docker-образ:**
+        Убедитесь, что в корне вашего проекта есть файлы [`Dockerfile`](Dockerfile:1) и [`docker-compose.yml`](docker-compose.yml:1).
+        ```bash
+        docker compose build
+        ```
+    
+    2.  **Запустите приложение с помощью Docker Compose:**
+        ```bash
+        docker compose up
+        ```
+        Это запустит MCPO Control Panel, и она будет доступна по адресу `http://localhost:8083/ui` по умолчанию. Данные будут сохраняться в томе `./data` на вашем хост-компьютере.
+    
+        При необходимости вы можете настроить порт и каталог данных в файле [`docker-compose.yml`](docker-compose.yml:1). Переменные окружения, такие как `MCPO_MANAGER_HOST`, `MCPO_MANAGER_PORT` и `MCPO_MANAGER_DATA_DIR`, также учитываются Docker-контейнером.
 
 ## Запуск приложения
 

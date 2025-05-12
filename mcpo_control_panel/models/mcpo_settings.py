@@ -44,7 +44,7 @@ class McpoSettings(BaseModel):
 
     # Health Check fields
     health_check_enabled: bool = Field(
-        default=False,
+        default=True,
         description="Enable periodic health checks for mcpo"
     )
     health_check_interval_seconds: PositiveInt = Field(
@@ -60,7 +60,7 @@ class McpoSettings(BaseModel):
         description="Delay between failed check attempts (in seconds, min: 1)"
     )
     auto_restart_on_failure: bool = Field(
-        default=False,
+        default=True,
         description="Automatically restart mcpo after specified number of failed checks"
     )
 
