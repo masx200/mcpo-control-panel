@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import os
+from pathlib import Path # <--- Добавлено
 import asyncio
 from typing import Optional
 from .db.database import create_db_and_tables, get_session
@@ -62,25 +63,38 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="MCP Manager UI", lifespan=lifespan)
 
-static_dir = "mcpo_control_panel/ui/static"
-templates_dir = "mcpo_control_panel/ui/templates"
-os.makedirs(os.path.join(static_dir, "css"), exist_ok=True)
-os.makedirs(os.path.join(static_dir, "js"), exist_ok=True)
-os.makedirs(templates_dir, exist_ok=True)
+# Определяем базовую директорию приложения (где находится main.py)
+APP_BASE_DIR = Path(__file__).resolve().parent
+
+# Формируем абсолютные пути к директориям static и templates
+static_dir_path = APP_BASE_DIR / "ui" / "static"
+templates_dir_path = APP_BASE_DIR / "ui" / "templates"
+
+# Преобразуем Path объекты в строки для использования в os.makedirs и конфигурациях
+static_dir_str = str(static_dir_path)
+templates_dir_str = str(templates_dir_path)
+
+# Создаем директории, если они не существуют, используя абсолютные пути
+os.makedirs(static_dir_path / "css", exist_ok=True)
+os.makedirs(static_dir_path / "js", exist_ok=True)
+os.makedirs(templates_dir_path, exist_ok=True)
+logger.info(f"Ensured static subdirectories exist in: {static_dir_path}")
+logger.info(f"Ensured templates directory exists: {templates_dir_path}")
 
 try:
-    app.mount("/static", StaticFiles(directory=static_dir), name="static")
+    app.mount("/static", StaticFiles(directory=static_dir_str), name="static")
+    logger.info(f"Static files mounted from directory: '{static_dir_str}'")
 except RuntimeError as e:
-     logger.error(f"Error mounting static files from '{static_dir}': {e}.")
+     logger.error(f"Error mounting static files from '{static_dir_str}': {e}.")
 
-templates = Jinja2Templates(directory=templates_dir)
+templates = Jinja2Templates(directory=templates_dir_str)
 import datetime
 templates.env.globals['now'] = datetime.datetime.utcnow
 
 ui_router.templates = templates
 server_api_router.set_templates_for_api(templates)
 mcpo_api_router.set_templates_for_api(templates)
-logger.info(f"Jinja2 templates configured for directory '{templates_dir}'")
+logger.info(f"Jinja2 templates configured for directory '{templates_dir_str}'")
 
 app.include_router(mcpo_api_router.router, prefix="/api/mcpo", tags=["MCPO Control API"])
 app.include_router(server_api_router.router, prefix="/api/servers", tags=["Server Definition API"])

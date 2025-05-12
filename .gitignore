@@ -9,3 +9,4 @@ mcpo_process.pid
 uv.lock
 mcpo_manager_data
 /mcpo_control_panel.egg-info
+data.json
