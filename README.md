@@ -2,8 +2,8 @@
 
 # MCPO Control Panel
 
-[![Python Version](https://img.shields.io/pypi/pyversions/mcpo-control-panel.svg)](https://pypi.org/project/mcpo-control-panel/)
-[![PyPI version](https://badge.fury.io/py/mcpo-control-panel.svg)](https://badge.fury.io/py/mcpo-control-panel)
+![](https://badge.mcpx.dev?type=server 'MCP Server') 
+
 
 A web-based control panel designed to simplify the management of [MCP-to-OpenAPI (`mcpo`)](https://github.com/open-webui/mcpo) instances and their server configurations. It provides a user-friendly UI and an API for interacting with `mcpo`.
 
