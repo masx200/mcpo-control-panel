@@ -96,13 +96,18 @@ pip install mcpo-control-panel
     
     You can also run the MCPO Control Panel using Docker. This is a convenient way to run the application in an isolated environment.
     
-    1.  **Build the Docker image:**
+    1.  **Pull the ready-made image from Docker Hub:**
+        ```bash
+        docker pull daswer123/mcpo-control-panel:latest
+        ```
+    
+    2.  **Or build the Docker image yourself:**
         Ensure you have [`Dockerfile`](Dockerfile:1) and [`docker-compose.yml`](docker-compose.yml:1) in your project root.
         ```bash
         docker compose build
         ```
     
-    2.  **Run the application using Docker Compose:**
+    3.  **Run the application using Docker Compose:**
         ```bash
         docker compose up
         ```
