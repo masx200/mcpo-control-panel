@@ -7,7 +7,7 @@ backend-path = ["."]
 
 [project]
 name = "mcpo-control-panel" 
-version = "0.0.1"          
+version = "0.0.2"          
 description = "Web UI and API for managing MCP Orchestrator (mcpo) instances and configurations." 
 readme = "README.md"
 requires-python = ">=3.11" 
