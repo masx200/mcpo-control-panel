@@ -2,9 +2,8 @@
 
 [![Python Version](https://img.shields.io/pypi/pyversions/mcpo-control-panel.svg)](https://pypi.org/project/mcpo-control-panel/)
 [![PyPI version](https://badge.fury.io/py/mcpo-control-panel.svg)](https://badge.fury.io/py/mcpo-control-panel)
-<!-- Add other badges if you have them, e.g., license, build status -->
 
-A web-based control panel designed to simplify the management of [MCP Orchestrator (`mcpo`)](https://github.com/daswer123/mcpo) instances and their server configurations. It provides a user-friendly UI and an API for interacting with `mcpo`.
+A web-based control panel designed to simplify the management of [MCP Orchestrator (`mcpo`)](https://github.com/open-webui/mcpo) instances and their server configurations. It provides a user-friendly UI and an API for interacting with `mcpo`.
 
 ## Key Features
 
@@ -51,7 +50,6 @@ A web-based control panel designed to simplify the management of [MCP Orchestrat
 ### Prerequisites
 
 *   Python 3.11 or higher.
-*   `mcpo` (MCP Orchestrator) installed and available in your PATH or Python environment. The control panel will attempt to run the `mcpo` command.
 
 ### Method 1: From PyPI (Recommended)
 
