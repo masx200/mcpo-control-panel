@@ -1,7 +1,4 @@
-<!-- ================================================ -->
-<!-- FILE: mcpo_control_panel/ui/templates/base.html  -->
-<!-- (Updated navigation links for Add Servers page) -->
-<!-- ================================================ -->
+<!-- FILE: mcpo_control_panel/ui/templates/base.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,11 +8,8 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
-    <!-- Include HTMX -->
-    <script src="https://unpkg.com/htmx.org@2.0.4"></script> {# Consider updating HTMX version if needed #}
-    <!-- Include Materialize JS -->
+    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
-    <!-- Include your custom JS -->
     <script src="{{ url_for('static', path='/js/main.js') }}" defer></script>
     {% block head_extra %}{% endblock %}
 </head>
@@ -27,26 +21,26 @@
             </a>
             <a href="#" data-target="mobile-nav" class="sidenav-trigger"><i class="material-icons">menu</i></a>
 
-            {# Desktop Navigation #}
             <ul class="right hide-on-med-and-down">
                 <li><a href="{{ url_for('ui_root') }}"><i class="material-icons left">list</i>Servers & Control</a></li>
                 <li><a href="{{ url_for('ui_tools') }}"><i class="material-icons left">widgets</i>Available Tools</a></li>
                 <li><a href="{{ url_for('ui_logs') }}"><i class="material-icons left">dvr</i>MCPO Logs</a></li>
                 <li><a href="{{ url_for('ui_edit_mcpo_settings_form') }}"><i class="material-icons left">settings</i>MCPO Settings</a></li>
-                {# --- UPDATED LINK --- #}
+                {% if mcpo_settings and not mcpo_settings.manual_config_mode_enabled %}
                 <li><a href="{{ url_for('ui_add_servers_form') }}"><i class="material-icons left">add_circle_outline</i>Add Servers</a></li>
+                {% endif %}
             </ul>
         </div>
     </nav>
 
-    {# Mobile Navigation (Sidenav) #}
     <ul class="sidenav blue-grey darken-4 white-text" id="mobile-nav">
          <li><a href="{{ url_for('ui_root') }}" class="white-text"><i class="material-icons left white-text">list</i>Servers & Control</a></li>
          <li><a href="{{ url_for('ui_tools') }}" class="white-text"><i class="material-icons left white-text">widgets</i>Available Tools</a></li>
          <li><a href="{{ url_for('ui_logs') }}" class="white-text"><i class="material-icons left white-text">dvr</i>MCPO Logs</a></li>
          <li><a href="{{ url_for('ui_edit_mcpo_settings_form') }}" class="white-text"><i class="material-icons left white-text">settings</i>MCPO Settings</a></li>
-         {# --- UPDATED LINK --- #}
+         {% if mcpo_settings and not mcpo_settings.manual_config_mode_enabled %}
          <li><a href="{{ url_for('ui_add_servers_form') }}" class="white-text"><i class="material-icons left white-text">add_circle_outline</i>Add Servers</a></li>
+         {% endif %}
     </ul>
 
     <main class="container" style="margin-top: 20px;">
@@ -59,31 +53,20 @@
     <footer class="page-footer blue-grey darken-2" style="margin-top: 40px; padding-top: 20px;">
          <div class="footer-copyright blue-grey darken-3">
             <div class="container">
-            © {{ now().year if now else '2024' }} MCP Manager {# Added fallback for now() #}
+            © {{ now().year if now else '2024' }} MCP Manager
             </div>
          </div>
     </footer>
 
-    {# General Materialize initialization #}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-             // Auto-initialize Materialize components like sidenav, tooltips, etc.
              M.AutoInit();
-
-             // Re-initialize specific components if AutoInit misses them or needs options
              var elemsCollapsible = document.querySelectorAll('.collapsible');
-             if (elemsCollapsible.length > 0) {
-                 M.Collapsible.init(elemsCollapsible);
-             }
+             if (elemsCollapsible.length > 0) { M.Collapsible.init(elemsCollapsible); }
              var elemsSelect = document.querySelectorAll('select');
-             if (elemsSelect.length > 0) {
-                M.FormSelect.init(elemsSelect);
-             }
+             if (elemsSelect.length > 0) { M.FormSelect.init(elemsSelect); }
              var elemsTooltipped = document.querySelectorAll('.tooltipped');
-             if (elemsTooltipped.length > 0) {
-                 M.Tooltip.init(elemsTooltipped);
-             }
-             // Ensure text field labels are updated correctly on page load
+             if (elemsTooltipped.length > 0) { M.Tooltip.init(elemsTooltipped); }
              M.updateTextFields();
         });
     </script>

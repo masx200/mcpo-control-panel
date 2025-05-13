@@ -1,215 +1,131 @@
-<!-- ================================================ -->
 <!-- FILE: mcpo_control_panel/ui/templates/index.html -->
-<!-- (Updated "Add Server(s)" button link and JS for toasts) -->
-<!-- ================================================ -->
 {% extends "base.html" %}
 
 {% block title %}Server Management - MCP Manager{% endblock %}
 {% block page_title %}Servers & MCPO Control{% endblock %}
-{% block page_subtitle %}Overview of MCP server definitions and mcpo process control{% endblock %}
+{% block page_subtitle %}Overview of MCP server definitions and MCPO process control{% endblock %}
 
 {% block head_extra %}
 <style>
-    /* Styles for improved settings section */
-    .settings-dl dt {
-        font-weight: 500;
-        color: #546e7a; /* blue-grey darken-1 */
-        width: 160px; /* Fixed width for alignment */
-        float: left;
-        clear: left;
-        margin-right: 10px;
-        text-align: right;
-    }
-    .settings-dl dd {
-        margin-left: 170px; /* Indent = dt width + margin-right */
-        margin-bottom: 5px;
-        color: #37474f; /* blue-grey darken-3 */
-    }
-    .settings-dl dd code {
-        background-color: rgba(0,0,0,0.08);
-        padding: 1px 5px;
-        border-radius: 3px;
-        font-size: 0.95em;
-    }
-    /* Additional styles for the button block under the config */
-    .config-actions {
-        margin-top: 15px;
-        display: flex;
-        flex-wrap: wrap; /* Wrap buttons if they don't fit */
-        gap: 10px; /* Space between buttons */
-        align-items: center;
-    }
-    .config-actions .btn-small {
-         margin-left: 0 !important; /* Remove extra margins */
-    }
-    #config-code-block {
+    .settings-dl dt { font-weight: 500; color: #546e7a; width: 160px; float: left; clear: left; margin-right: 10px; text-align: right; }
+    .settings-dl dd { margin-left: 170px; margin-bottom: 5px; color: #37474f; }
+    .settings-dl dd code { background-color: rgba(0,0,0,0.08); padding: 1px 5px; border-radius: 3px; font-size: 0.95em; }
+    .config-actions { margin-top: 15px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+    .config-actions .btn-small { margin-left: 0 !important; } /* Reset materialize default */
+
+    #config-code-block-readonly, #manual-config-content-area-main {
         display: block;
-        max-height: 45vh; /* Slightly more space */
+        min-height: 250px;
+        max-height: 50vh;
         overflow-y: auto;
-        background-color: #37474f; /* Slightly lighter */
+        background-color: #263238; /* Darker for readonly */
         color: #eceff1;
         padding: 15px;
         border-radius: 4px;
         font-family: 'Courier New', Courier, monospace;
         font-size: 0.9em;
-        border: 1px solid rgba(0,0,0,0.2); /* Light border */
-        white-space: pre-wrap; /* Ensure wrapping */
-        word-break: break-word; /* Break long words */
+        border: 1px solid #37474f;
+        white-space: pre-wrap;
+        word-break: break-word;
+        margin-bottom: 0; /* Remove bottom margin from textarea itself */
     }
-    /* Style for the server list header */
-    .server-list-header {
+    #manual-config-content-area-main.materialize-textarea {
+        background-color: #fff !important;
+        color: #212121 !important;
+        border: 1px solid #bdbdbd !important;
+        box-shadow: inset 0 1px 2px rgba(0,0,0,0.075);
+    }
+    /* Input field wrapper for manual config textarea */
+    .manual-config-textarea-wrapper .input-field {
+        margin-top: 0; /* Remove top margin for better alignment with label */
+        margin-bottom: 15px; /* Space before buttons */
+    }
+    .manual-config-textarea-wrapper .input-field label.active {
+        transform: translateY(-14px) scale(0.8); /* Ensure label is correctly positioned */
+        transform-origin: 0 0;
+    }
+
+
+    .server-list-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #cfd8dc; }
+    .server-list-header h5 { margin: 0; }
+
+    .manual-mode-section { margin-top: 20px; padding: 20px; border: 1px solid #ffab40; background-color: #fff3e0; border-radius: 4px; }
+    .manual-mode-section .manual-mode-active-warning { padding: 12px 18px; margin-bottom: 20px; border-left: 4px solid #ff6f00; background-color: #fff8e1; }
+    /* Editor actions below the textarea */
+    .manual-mode-section .editor-actions-block {
+        margin-top: 0px; /* Buttons directly below the textarea field */
+        padding-top: 10px;
+        border-top: 1px solid #e0e0e0; /* Optional separator */
         display: flex;
-        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
         align-items: center;
-        margin-bottom: 15px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #cfd8dc; /* Separator */
     }
-    .server-list-header h5 {
-        margin: 0;
-    }
+    .manual-mode-controls { margin-bottom: 20px; padding: 15px; background-color: #e8f5e9; border-radius: 4px; border: 1px solid #a5d6a7; }
+    .manual-mode-controls .switch label { color: #1b5e20; font-weight: 500; }
+    .manual-mode-controls .switch .lever { background-color: #c8e6c9; }
+    .manual-mode-controls .switch input[type=checkbox]:checked+.lever { background-color: #81c784; }
+    .manual-mode-controls .switch input[type=checkbox]:checked+.lever:after { background-color: #4caf50; }
+    .json-example-container { margin-top: 20px; }
+    .json-example-container pre { background: #f5f5f5; border: 1px solid #e0e0e0; padding: 15px; border-radius: 4px; }
 </style>
 {% endblock %}
 
 {% block content %}
 
-<!-- MCPO Control Section -->
 <div class="row">
     <div class="col s12">
-        <div class="card blue-grey lighten-4">
+        <div class="card blue-grey lighten-5">
              <div class="card-content" style="padding-bottom: 10px;">
                 <span class="card-title blue-grey-text text-darken-3">MCPO Process Management</span>
-                <div id="mcpo-status-block"
-                     hx-get="{{ url_for('get_mcpo_process_status_html') }}"
-                     hx-trigger="load, every 5s" {# Trigger every 5 seconds to update status #}
-                     hx-target="this"
-                     hx-swap="innerHTML"
-                     class="blue-grey-text text-darken-2"
-                     style="min-height: 50px;">
-                     {# Initial Loading State #}
+                <div id="mcpo-status-block" hx-get="{{ url_for('get_mcpo_process_status_html') }}" hx-trigger="load, every 5s" hx-target="this" hx-swap="innerHTML" class="blue-grey-text text-darken-2" style="min-height: 50px;">
                      <div class="progress blue-grey lighten-3"><div class="indeterminate blue-grey"></div></div>
                      <p>Loading status...</p>
                 </div>
             </div>
             <div class="card-action" style="padding: 15px 24px;">
-                {# --- Control Buttons --- #}
-                <button hx-post="{{ url_for('start_mcpo_process') }}" hx-target="#mcpo-status-block" hx-swap="innerHTML" hx-indicator="#mcpo-spinner"
-                        class="btn waves-effect waves-light green darken-1 tooltipped" style="margin-right: 8px;"
-                        data-position="top" data-tooltip="Start the mcpo process with the current configuration">
+                <button hx-post="{{ url_for('start_mcpo_process') }}" hx-target="#mcpo-status-block" hx-swap="innerHTML" hx-indicator="#mcpo-spinner" class="btn waves-effect waves-light green darken-1 tooltipped" style="margin-right: 8px;" data-position="top" data-tooltip="Start MCPO. Uses manual config if Manual Mode is ON.">
                     <i class="material-icons left">play_arrow</i>Start
                 </button>
-                <button hx-post="{{ url_for('stop_mcpo_process') }}" hx-target="#mcpo-status-block" hx-swap="innerHTML" hx-indicator="#mcpo-spinner"
-                        class="btn waves-effect waves-light red darken-1 tooltipped" style="margin-right: 8px;"
-                        data-position="top" data-tooltip="Stop the running mcpo process">
+                <button hx-post="{{ url_for('stop_mcpo_process') }}" hx-target="#mcpo-status-block" hx-swap="innerHTML" hx-indicator="#mcpo-spinner" class="btn waves-effect waves-light red darken-1 tooltipped" style="margin-right: 8px;" data-position="top" data-tooltip="Stop the running MCPO process.">
                     <i class="material-icons left">stop</i>Stop
                 </button>
-                <button hx-post="{{ url_for('restart_mcpo_process') }}" hx-target="#mcpo-status-block" hx-swap="innerHTML" hx-indicator="#mcpo-spinner"
-                        class="btn waves-effect waves-light orange darken-1 tooltipped"
-                        data-position="top" data-tooltip="Save current server definitions to config and restart mcpo">
-                    <i class="material-icons left">refresh</i>Apply and Restart
+                <button hx-post="{{ url_for('restart_mcpo_process') }}" hx-target="#mcpo-status-block" hx-swap="innerHTML" hx-indicator="#mcpo-spinner" class="btn waves-effect waves-light orange darken-1 tooltipped" data-position="top" data-tooltip="If Manual Mode OFF: save DB definitions to config and restart. If Manual Mode ON: restart with current manual config.">
+                    <i class="material-icons left">refresh</i>Apply & Restart
                 </button>
-                {# --- Spinner --- #}
                 <div id="mcpo-spinner" class="htmx-indicator preloader-wrapper small active" style="vertical-align: middle; margin-left: 15px; width: 28px; height: 28px;">
-                    <div class="spinner-layer spinner-blue-only">
-                        <div class="circle-clipper left"><div class="circle"></div></div>
-                        <div class="gap-patch"><div class="circle"></div></div>
-                        <div class="circle-clipper right"><div class="circle"></div></div>
-                    </div>
+                    <div class="spinner-layer spinner-blue-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div>
                 </div>
             </div>
 
-            <!-- Collapsible Sections -->
-             <div class="card-content" style="padding-top: 0; background-color: #eceff1;">
+             <div class="card-content" style="padding-top: 0; background-color: #fafafa;">
                 <ul class="collapsible" style="border: none; box-shadow: none;">
-                     {# Section 1: Current Settings #}
-                     <li class="active"> {# Start with settings open #}
-                        <div class="collapsible-header waves-effect waves-blue-grey">
-                            <i class="material-icons">tune</i>Current MCPO Settings
-                            <a href="{{ url_for('ui_edit_mcpo_settings_form') }}" class="secondary-content tooltipped" data-position="top" data-tooltip="Edit MCPO settings" onclick="event.stopPropagation();">
-                                <i class="material-icons blue-grey-text">edit</i>
-                            </a>
-                        </div>
+                     <li class="active">
+                        <div class="collapsible-header waves-effect waves-blue-grey"><i class="material-icons">tune</i>Settings Overview & Mode Control</div>
                         <div class="collapsible-body" style="padding: 20px 25px; line-height: 1.7;">
                             <dl class="settings-dl">
-                                <dt>Port:</dt>
-                                <dd><code>{{ mcpo_settings.port }}</code></dd>
-                                <dt>Public URL:</dt>
-                                <dd><code>{{ mcpo_settings.public_base_url if mcpo_settings.public_base_url else 'Not set (uses http://127.0.0.1:port)' }}</code></dd>
-                                <dt>Use API Key:</dt>
-                                <dd><code>{{ 'Yes' if mcpo_settings.use_api_key else 'No' }}</code></dd>
-                                {% if mcpo_settings.use_api_key %}
-                                <dt>API Key:</dt>
-                                <dd><code>{{ mcpo_settings.api_key if mcpo_settings.api_key else 'Not set' }}</code></dd>
-                                {% endif %}
-                                <dt>Config Path:</dt>
-                                <dd><code>{{ mcpo_settings.config_file_path }}</code></dd>
-                                <dt>Logs Path:</dt>
-                                <dd><code>{{ mcpo_settings.log_file_path if mcpo_settings.log_file_path else 'Not set (logs to stdout/stderr)' }}</code></dd>
-                                <dt>Health Check:</dt>
-                                <dd><code>{{ 'Enabled' if mcpo_settings.health_check_enabled else 'Disabled' }}</code>
-                                    {% if mcpo_settings.health_check_enabled %}
-                                        (Interval: {{mcpo_settings.health_check_interval_seconds}}s,
-                                        Attempts: {{mcpo_settings.health_check_failure_attempts}},
-                                        Auto-Restart: {{'On' if mcpo_settings.auto_restart_on_failure else 'Off'}})
-                                    {% endif %}
-                                </dd>
-                             </dl>
-                        </div>
-                    </li>
-                     {# Section 2: View Generated Config #}
-                     <li>
-                        <div class="collapsible-header waves-effect waves-blue-grey">
-                            <i class="material-icons">visibility</i>View Generated Config
-                        </div>
-                        <div class="collapsible-body" style="padding: 20px 25px;">
-                            <p class="grey-text text-darken-1" style="margin-top: 0; margin-bottom: 10px; font-size: 0.9em;">
-                                Displays the current content of the configuration file <code>{{ mcpo_settings.config_file_path }}</code>.
-                                It is generated when "Apply and Restart" is clicked.
-                            </p>
-                            <div id="generated-config-container"
-                                 hx-get="{{ url_for('get_generated_mcpo_config_content') }}"
-                                 hx-trigger="load" {# Load config content on page load #}
-                                 hx-target="#config-code-block"
-                                 hx-swap="innerHTML"
-                                 hx-indicator="#config-loading-indicator"> {# Indicate loading #}
-                                {# Pre block with code inside, target for HTMX swap #}
-                                <pre><code id="config-code-block">Loading configuration content...</code></pre>
-                                {# Loading indicator specific to this section #}
-                                <div id="config-loading-indicator" class="htmx-indicator center-align" style="margin-top: 10px;">
-                                    <div class="preloader-wrapper small active"><div class="spinner-layer spinner-blue-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div></div>
+                                <dt>MCPO Port:</dt><dd><code>{{ mcpo_settings.port }}</code></dd>
+                                <dt>Config File:</dt><dd><code>{{ mcpo_settings.config_file_path }}</code></dd>
+                                <dt>Log File:</dt><dd><code>{{ mcpo_settings.log_file_path if mcpo_settings.log_file_path else 'Not Set (stdout/stderr)' }}</code></dd>
+                            </dl>
+                            <div class="right-align" style="margin-top:-20px; margin-bottom:15px;">
+                                <a href="{{ url_for('ui_edit_mcpo_settings_form') }}" class="btn-small waves-effect waves-light blue-grey lighten-1 tooltipped" data-position="left" data-tooltip="Edit All MCPO Settings"><i class="material-icons left tiny">edit</i>Full Settings</a>
+                            </div>
+                            <div class="divider" style="margin: 15px 0;"></div>
+                            <div class="manual-mode-controls">
+                                <div class="switch">
+                                    <label>
+                                        Automated Mode (DB Driven)
+                                        <input type="checkbox" id="manual-config-mode-switch-main" {% if mcpo_settings.manual_config_mode_enabled %}checked{% endif %}>
+                                        <span class="lever"></span>
+                                        Manual Configuration Mode
+                                    </label>
                                 </div>
+                                <span id="manual-mode-save-status" class="grey-text" style="font-size:0.9em; margin-left:10px;"></span>
                             </div>
-                            <div class="config-actions">
-                                {# Copy Button - JS handled below #}
-                                <button id="copy-config-button"
-                                        class="btn-small waves-effect waves-light blue-grey darken-1 tooltipped"
-                                        data-position="top" data-tooltip="Copy content to clipboard"
-                                        type="button">
-                                    <i class="material-icons left tiny">content_copy</i>Copy
-                                </button>
-                                {# Refresh Button - uses HTMX #}
-                                <button class="btn-small waves-effect waves-light blue-grey darken-1 tooltipped"
-                                        data-position="top" data-tooltip="Refresh displayed config"
-                                        hx-get="{{ url_for('get_generated_mcpo_config_content') }}"
-                                        hx-target="#config-code-block"
-                                        hx-swap="innerHTML"
-                                        hx-indicator="#config-loading-indicator"> {# Use same indicator #}
-                                    <i class="material-icons left tiny">refresh</i>Refresh
-                                </button>
-                                {# Download Links - standard HTML5 download #}
-                                <a href="{{ url_for('get_generated_mcpo_config_content') }}"
-                                   download="{{ mcpo_settings.config_file_path.split('/')[-1].split('\\')[-1] or 'mcp_config.json' }}"
-                                   class="btn-small waves-effect waves-light teal darken-1 tooltipped"
-                                   data-position="top" data-tooltip="Download standard configuration file (Linux/Mac)">
-                                    <i class="material-icons left tiny">file_download</i>Download
-                                </a>
-                                <a href="{{ url_for('get_generated_mcpo_config_content_windows') }}"
-                                   download="mcp_config_windows.json"
-                                   class="btn-small waves-effect waves-light blue darken-1 tooltipped"
-                                   data-position="top" data-tooltip="Download configuration file adapted for Windows (cmd /c ...)">
-                                    <i class="material-icons left tiny">downloading</i>Download (Win)
-                                </a>
-                            </div>
+                            <p class="grey-text text-darken-1" style="font-size:0.9em;">
+                                Toggling Manual Mode updates the setting immediately. The page will then reload.
+                            </p>
                         </div>
                     </li>
                 </ul>
@@ -218,168 +134,317 @@
     </div>
 </div>
 
-<!-- Server List Section -->
-<div class="row" style="margin-top: 30px;">
-    <div class="col s12">
-        <div class="server-list-header">
-             <h5 class="blue-grey-text text-darken-2">Server Definitions</h5>
-             {# --- UPDATED LINK --- Points to the new add page #}
-             <a href="{{ url_for('ui_add_servers_form') }}" class="btn waves-effect waves-light blue darken-1 tooltipped" data-position="top" data-tooltip="Add one or more servers">
-                 <i class="material-icons left">add_circle_outline</i>Add Server(s)
-             </a>
-         </div>
-        <table class="highlight responsive-table card">
-            <thead class="blue-grey lighten-5 black-text">
-                <tr>
-                    <th style="width: 5%; padding-left: 15px;">On</th>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th>Details</th>
-                    <th style="width: 15%; padding-right: 15px;">Actions</th>
-                </tr>
-            </thead>
-            <tbody id="server-list-body">
-                {# Server rows loaded here, potentially via HTMX or server-side rendering #}
-                {% for server in server_definitions %}
-                    {% include "_server_row.html" %} {# Include the partial for each server #}
-                {% else %}
-                    {# Message shown if no servers exist #}
-                    <tr>
-                        <td colspan="5" class="center-align grey-text" style="padding: 20px;">
-                            No server definitions found.
-                             {# --- UPDATED LINK --- Points to the new add page #}
-                             <a href="{{ url_for('ui_add_servers_form') }}">Add some?</a>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+{% if mcpo_settings.manual_config_mode_enabled %}
+    <div class="row manual-mode-section">
+        <div class="col s12">
+            <div class="card-panel orange lighten-4 blue-grey-text text-darken-3 manual-mode-active-warning">
+                <i class="material-icons left">warning</i>
+                <strong>Manual Configuration Mode is ACTIVE.</strong>
+                MCPO will use the configuration content edited below. Server definitions from the database are ignored.
+            </div>
+
+            <h5 class="blue-grey-text text-darken-2">Edit Manual MCPO Configuration</h5>
+            <p class="grey-text text-darken-1" style="margin-bottom: 10px;">
+                Directly edit the content for configuration file: <code>{{ mcpo_settings.config_file_path }}</code>.
+            </p>
+            
+            <div class="manual-config-textarea-wrapper">
+                <div class="input-field col s12"> {# Standard input-field wrapper for materialize-textarea styling #}
+                    <textarea id="manual-config-content-area-main" name="manual_config_content_area_main" class="materialize-textarea"
+                              placeholder="JSON content for MCPO..."
+                              hx-get="{{ url_for('get_generated_mcpo_config_content') }}"
+                              hx-trigger="load, manualConfigLoad"
+                              hx-target="this"
+                              hx-swap="value"></textarea>
+                    <label for="manual-config-content-area-main" class="active">Manual MCPO Configuration (JSON)</label> {# Label needs to be active if hx-get pre-fills #}
+                </div>
+            </div>
+            <span class="helper-text col s12" id="manual-config-message-area-main" style="margin-bottom:15px; display:block;">Load from disk or paste your config.</span>
+
+            <div class="editor-actions-block col s12">
+                <button type="button" class="btn-small waves-effect waves-light blue-grey lighten-1 tooltipped" data-position="top" data-tooltip="Reload content from the saved file on disk."
+                        onclick="htmx.trigger('#manual-config-content-area-main', 'manualConfigLoad')">
+                    <i class="material-icons left tiny">refresh</i>Reload
+                </button>
+                <button type="button" class="btn-small waves-effect waves-light teal darken-1 tooltipped" data-position="top" data-tooltip="Save current editor content to disk."
+                        hx-post="{{ url_for('set_manual_config_content_api') }}"
+                        hx-include="[name='manual_config_content_area_main']"
+                        hx-target="#manual-config-message-area-main"
+                        hx-swap="innerHTML"
+                        hx-indicator="#manual-config-spinner-main">
+                    <i class="material-icons left tiny">save</i>Save
+                </button>
+                <button id="copy-manual-config-btn" type="button" class="btn-small waves-effect waves-light blue-grey lighten-1 tooltipped" data-position="top" data-tooltip="Copy editor content to clipboard.">
+                    <i class="material-icons left tiny">content_copy</i>Copy
+                </button>
+                <button id="reset-manual-config-btn" type="button" class="btn-small waves-effect waves-light orange lighten-1 tooltipped" data-position="top" data-tooltip="Reset editor to a default empty MCPO config. Does not save automatically.">
+                    <i class="material-icons left tiny">settings_backup_restore</i>Reset
+                </button>
+                <a id="download-manual-config-btn" href="#" class="btn-small waves-effect waves-light green darken-1 tooltipped" data-position="top" data-tooltip="Download current editor content as a JSON file."
+                   download="{{ mcpo_settings.config_file_path.split('/')[-1].split('\\')[-1] or 'mcp_manual_config.json' }}">
+                    <i class="material-icons left tiny">file_download</i>Download
+                </a>
+                <div id="manual-config-spinner-main" class="htmx-indicator preloader-wrapper small active">
+                     <div class="spinner-layer spinner-teal-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div>
+                </div>
+            </div>
+
+            <div class="json-example-container col s12">
+                <ul class="collapsible">
+                    <li>
+                        <div class="collapsible-header grey lighten-4 blue-grey-text text-darken-2"><i class="material-icons">help_outline</i>Example MCPO JSON Structure</div>
+                        <div class="collapsible-body">
+                            <p>A basic MCPO configuration looks like this:</p>
+                            <pre><code>{
+  "mcpServers": {
+    "my-echo-server": {
+      "command": "npx",
+      "args": ["@mcp/echo-server", "-p", "8001"],
+      "env": {
+        "LOG_LEVEL": "debug"
+      }
+    },
+    "my-sse-feed": {
+      "type": "sse",
+      "url": "http://localhost:9000/events"
+    }
+  }
+}</code></pre>
+                            <p>Each key under <code>mcpServers</code> is a unique name for your tool.
+                                For <code>stdio</code> type, provide <code>command</code>, optionally <code>args</code> (list of strings) and <code>env</code> (object).
+                                For <code>sse</code> or <code>streamable_http</code>, provide <code>type</code> and <code>url</code>.
+                            </p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
-</div>
+
+{% else %}
+    <div class="row" style="margin-top: 15px;">
+         <div class="col s12">
+            <ul class="collapsible">
+                 <li>
+                    <div class="collapsible-header waves-effect waves-blue-grey"><i class="material-icons">visibility</i>View DB-Generated Config</div>
+                    <div class="collapsible-body" style="padding: 20px 25px;">
+                        <p class="grey-text text-darken-1" style="margin-top: 0; margin-bottom: 10px; font-size: 0.9em;">
+                            Displays the content of <code>{{ mcpo_settings.config_file_path }}</code> generated from UI server definitions when "Apply & Restart" is clicked.
+                        </p>
+                        <div id="generated-config-container-readonly" hx-get="{{ url_for('get_generated_mcpo_config_content') }}" hx-trigger="load" hx-target="#config-code-block-readonly" hx-swap="innerHTML" hx-indicator="#config-loading-indicator-readonly">
+                            <pre><code id="config-code-block-readonly">Loading configuration content...</code></pre>
+                            <div id="config-loading-indicator-readonly" class="htmx-indicator center-align" style="margin-top: 10px;">
+                                <div class="preloader-wrapper small active"><div class="spinner-layer spinner-blue-only"><div class="circle-clipper left"><div class="circle"></div></div><div class="gap-patch"><div class="circle"></div></div><div class="circle-clipper right"><div class="circle"></div></div></div></div>
+                            </div>
+                        </div>
+                        <div class="config-actions">
+                            <button id="copy-config-button-readonly" class="btn-small waves-effect waves-light blue-grey darken-1 tooltipped" data-position="top" data-tooltip="Copy content to clipboard" type="button"><i class="material-icons left tiny">content_copy</i>Copy</button>
+                            <button class="btn-small waves-effect waves-light blue-grey darken-1 tooltipped" data-position="top" data-tooltip="Refresh displayed config" hx-get="{{ url_for('get_generated_mcpo_config_content') }}" hx-target="#config-code-block-readonly" hx-swap="innerHTML" hx-indicator="#config-loading-indicator-readonly"><i class="material-icons left tiny">refresh</i>Refresh</button>
+                            <a href="{{ url_for('get_generated_mcpo_config_content') }}" download="{{ mcpo_settings.config_file_path.split('/')[-1].split('\\')[-1] or 'mcp_config.json' }}" class="btn-small waves-effect waves-light teal darken-1 tooltipped" data-position="top" data-tooltip="Download standard configuration file (Linux/Mac)"><i class="material-icons left tiny">file_download</i>Download</a>
+                            <a href="{{ url_for('get_generated_mcpo_config_content_windows') }}" download="mcp_config_windows.json" class="btn-small waves-effect waves-light blue darken-1 tooltipped" data-position="top" data-tooltip="Download configuration file adapted for Windows (cmd /c ...)"> <i class="material-icons left tiny">downloading</i>Download (Win)</a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="row" style="margin-top: 30px;">
+        <div class="col s12">
+            <div class="server-list-header">
+                 <h5 class="blue-grey-text text-darken-2">Server Definitions (from Database)</h5>
+                 <a href="{{ url_for('ui_add_servers_form') }}" class="btn waves-effect waves-light blue darken-1 tooltipped" data-position="top" data-tooltip="Add one or more servers">
+                     <i class="material-icons left">add_circle_outline</i>Add Server(s)
+                 </a>
+             </div>
+            <table class="highlight responsive-table card">
+                <thead class="blue-grey lighten-5 black-text">
+                    <tr><th style="width: 5%; padding-left: 15px;">On</th><th>Name</th><th>Type</th><th>Details</th><th style="width: 15%; padding-right: 15px;">Actions</th></tr>
+                </thead>
+                <tbody id="server-list-body">
+                    {% for server in server_definitions %}
+                        {% include "_server_row.html" %}
+                    {% else %}
+                        <tr><td colspan="5" class="center-align grey-text" style="padding: 20px;">No server definitions found. <a href="{{ url_for('ui_add_servers_form') }}">Add some?</a></td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endif %}
 
 <script>
+    const currentMcpoSettings = {{ mcpo_settings.model_dump_json() | safe }};
+
     document.addEventListener('DOMContentLoaded', function() {
-        // console.log('DOMContentLoaded Index'); // Optional logging
+        M.AutoInit();
 
-        // --- Function to copy config ---
-        function copyToClipboard(buttonElement) {
-            const codeBlock = document.getElementById('config-code-block');
-            if (!codeBlock) {
-                console.error("Element #config-code-block not found");
-                M.toast({html: 'Error: Code block not found.', classes: 'red lighten-1'});
-                return;
-            }
-            const configText = codeBlock.innerText || codeBlock.textContent;
+        const manualModeSwitch = document.getElementById('manual-config-mode-switch-main');
+        const manualModeSaveStatus = document.getElementById('manual-mode-save-status');
+        if (manualModeSwitch) {
+            manualModeSwitch.addEventListener('change', async function() {
+                const newManualModeState = this.checked;
+                let newSettings = { ...currentMcpoSettings, manual_config_mode_enabled: newManualModeState };
+                if(manualModeSaveStatus) manualModeSaveStatus.textContent = 'Saving...';
+                try {
+                    const response = await fetch("{{ url_for('update_settings') }}", {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(newSettings)
+                    });
+                    if (response.ok) {
+                        M.toast({html: 'Manual mode setting saved! Page will reload.', classes: 'green lighten-1'});
+                        if(manualModeSaveStatus) manualModeSaveStatus.textContent = 'Saved. Reloading...';
+                        setTimeout(() => window.location.reload(), 1200);
+                    } else {
+                        const errorData = await response.json();
+                        M.toast({html: `Error: ${errorData.detail || response.statusText}`, classes: 'red lighten-1'});
+                        if(manualModeSaveStatus) manualModeSaveStatus.textContent = 'Error saving.';
+                        this.checked = !newManualModeState;
+                    }
+                } catch (error) {
+                    M.toast({html: 'Network error saving setting.', classes: 'red lighten-1'});
+                    if(manualModeSaveStatus) manualModeSaveStatus.textContent = 'Network error.';
+                    this.checked = !newManualModeState;
+                }
+            });
+        }
 
-            // Check if the content is still the placeholder or an error message
-            const placeholderTexts = ['Loading configuration content...', 'Error getting standard config:', '// Error generating Windows config:'];
-            if (!configText || configText.trim() === '' || placeholderTexts.some(text => configText.includes(text))) {
-                 M.toast({html: 'Cannot copy: Config not loaded, empty, or contains an error.', classes: 'orange lighten-1'});
-                 return;
-            }
-
-            // Use Clipboard API
+        function copyTextToClipboard(textToCopy, successMessage = 'Content copied!', buttonElement = null, iconElement = null, originalButtonText = 'Copy', originalIconText = 'content_copy') {
             if (!navigator.clipboard) {
-                M.toast({html: 'Clipboard copy not supported by your browser.', classes: 'red lighten-1'});
+                M.toast({html: 'Clipboard API not available.', classes: 'orange lighten-1'});
                 return;
             }
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                M.toast({html: successMessage, classes: 'green lighten-1'});
+                if (buttonElement && iconElement) {
+                    const textNode = Array.from(buttonElement.childNodes).find(node => node.nodeType === Node.TEXT_NODE);
+                    if (textNode) textNode.nodeValue = " Copied"; else buttonElement.innerHTML = `<i class="material-icons left tiny">check</i>Copied`;
 
-            navigator.clipboard.writeText(configText).then(() => {
-                M.toast({html: 'Config copied!', classes: 'green lighten-1', displayLength: 2000});
-                if (buttonElement) {
-                    // Visual feedback on the button
-                    const icon = buttonElement.querySelector('i');
-                    const originalText = 'Copy'; // Assume original text is just "Copy"
-                    const originalIcon = 'content_copy';
-                    buttonElement.innerHTML = `<i class="material-icons left tiny">check</i>Copied`;
-                    buttonElement.disabled = true; // Temporarily disable
+                    iconElement.innerText = 'check';
+                    buttonElement.disabled = true;
                     setTimeout(() => {
-                         buttonElement.innerHTML = `<i class="material-icons left tiny">${originalIcon}</i> ${originalText}`;
-                         buttonElement.disabled = false;
-                    }, 2000); // Reset after 2 seconds
+                        if (textNode) textNode.nodeValue = ` ${originalButtonText}`; else buttonElement.innerHTML = `<i class="material-icons left tiny">${originalIconText}</i> ${originalButtonText}`;
+                        iconElement.innerText = originalIconText;
+                        buttonElement.disabled = false;
+                    }, 2000);
                 }
             }).catch(err => {
-                console.error('Clipboard copy error: ', err);
-                M.toast({html: 'Failed to copy config.', classes: 'red lighten-1'});
+                M.toast({html: 'Failed to copy.', classes: 'red lighten-1'});
             });
         }
-        // --- End Copy Function ---
 
-        // --- Initialize Materialize components ---
-        // Use AutoInit first, then re-initialize specifics if needed
-        M.AutoInit();
-        var elemsCollapsible = document.querySelectorAll('.collapsible');
-        if (elemsCollapsible.length > 0) { M.Collapsible.init(elemsCollapsible); }
-        var elemsTooltip = document.querySelectorAll('.tooltipped');
-        if (elemsTooltip.length > 0) { M.Tooltip.init(elemsTooltip); }
-        // No selects on this page currently
-
-        // --- Attach Event Listener for Copy Button ---
-        const copyButton = document.getElementById('copy-config-button');
-        if (copyButton) {
-            copyButton.addEventListener('click', function() {
-                copyToClipboard(this);
+        const copyButtonReadOnly = document.getElementById('copy-config-button-readonly');
+        if (copyButtonReadOnly) {
+            copyButtonReadOnly.addEventListener('click', function() {
+                const codeBlock = document.getElementById('config-code-block-readonly');
+                if (codeBlock && codeBlock.textContent.trim() !== 'Loading configuration content...') {
+                    copyTextToClipboard(codeBlock.textContent, 'DB-Generated config copied!', this, this.querySelector('i'), 'Copy', 'content_copy');
+                } else {
+                    M.toast({html: 'Config not loaded or empty.', classes: 'orange lighten-1'});
+                }
             });
-        } else {
-            console.warn("Copy button (#copy-config-button) not found on DOMContentLoaded.");
         }
 
-        // --- UPDATED Toast Logic ---
+        const manualConfigTextarea = document.getElementById('manual-config-content-area-main');
+        const copyManualConfigBtn = document.getElementById('copy-manual-config-btn');
+        if (copyManualConfigBtn && manualConfigTextarea) {
+            copyManualConfigBtn.addEventListener('click', function() {
+                if (manualConfigTextarea.value.trim() !== '') {
+                     copyTextToClipboard(manualConfigTextarea.value, 'Manual config copied!', this, this.querySelector('i'), 'Copy', 'content_copy');
+                } else {
+                     M.toast({html: 'Editor is empty.', classes: 'orange lighten-1'});
+                }
+            });
+        }
+
+        const resetManualConfigBtn = document.getElementById('reset-manual-config-btn');
+        if (resetManualConfigBtn && manualConfigTextarea) {
+            resetManualConfigBtn.addEventListener('click', function() {
+                if (confirm('Are you sure you want to reset the editor to a default empty config? This will not save automatically.')) {
+                    manualConfigTextarea.value = JSON.stringify({ "mcpServers": {} }, null, 2);
+                    M.textareaAutoResize(manualConfigTextarea);
+                    const label = document.querySelector('label[for="manual-config-content-area-main"]');
+                    if (label) label.classList.add('active'); // Ensure label stays floated
+                    M.toast({html: 'Editor reset to default. Remember to save if needed.', classes: 'blue lighten-1'});
+                }
+            });
+        }
+
+        const downloadManualConfigBtn = document.getElementById('download-manual-config-btn');
+        if (downloadManualConfigBtn && manualConfigTextarea) {
+            downloadManualConfigBtn.addEventListener('click', function(event) {
+                const content = manualConfigTextarea.value;
+                if (content.trim() === "") {
+                    M.toast({html: 'Editor is empty, nothing to download.', classes: 'orange lighten-1'});
+                    event.preventDefault(); 
+                    return;
+                }
+                try {
+                    JSON.parse(content); 
+                } catch (e) {
+                    M.toast({html: 'Content is not valid JSON. Please fix before downloading.', classes: 'red lighten-1'});
+                    event.preventDefault();
+                    return;
+                }
+                const blob = new Blob([content], { type: 'application/json' });
+                this.href = URL.createObjectURL(blob);
+                // No need to revoke, browser handles it for <a> tag downloads
+            });
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const singleAddSuccess = urlParams.get('single_add_success');
-        const bulkSuccess = urlParams.get('bulk_success'); // Could be count
+        const bulkSuccess = urlParams.get('bulk_success');
         const updateSuccess = urlParams.get('update_success');
-        const bulkError = urlParams.get('bulk_error'); // Error summary string
-        const bulkInfo = urlParams.get('bulk_info'); // Info string
+        const bulkError = urlParams.get('bulk_error');
+        const bulkInfo = urlParams.get('bulk_info');
+        let toastShown = false;
 
-        let toastShown = false; // Flag to prevent multiple toasts erasing the URL
+        if (singleAddSuccess) { M.toast({html: `Server "${decodeURIComponent(singleAddSuccess)}" added!`, classes: 'green lighten-1'}); toastShown = true; }
+        else if (bulkSuccess) { M.toast({html: `Added ${decodeURIComponent(bulkSuccess)} servers from JSON!`, classes: 'green lighten-1'}); toastShown = true; if (bulkError) { setTimeout(() => { M.toast({html: `Note: ${decodeURIComponent(bulkError)}`, classes: 'orange darken-1', displayLength: 6000});}, 500);}}
+        else if (updateSuccess) { M.toast({html: `Server "${decodeURIComponent(updateSuccess)}" updated!`, classes: 'green lighten-1'}); toastShown = true; }
+        else if (bulkError) { M.toast({html: `Bulk Add Error: ${decodeURIComponent(bulkError)}`, classes: 'red darken-1', displayLength: 6000}); toastShown = true; }
+        else if (bulkInfo) { M.toast({html: `Bulk Add Info: ${decodeURIComponent(bulkInfo)}`, classes: 'blue lighten-1 black-text', displayLength: 5000}); toastShown = true; }
 
-        if (singleAddSuccess) {
-            M.toast({html: `Server "${decodeURIComponent(singleAddSuccess)}" successfully added!`, classes: 'green lighten-1', displayLength: 4000});
-            toastShown = true;
-        } else if (bulkSuccess) { // Check bulk success first
-            const count = parseInt(bulkSuccess, 10);
-            if (!isNaN(count) && count > 0) {
-                 M.toast({html: `Successfully added ${count} servers from JSON!`, classes: 'green lighten-1', displayLength: 4000});
-                 toastShown = true;
-                 // Check if there was also a partial error message
-                 if (bulkError) {
-                     // Show a secondary, longer-lasting toast for the error part
-                     setTimeout(() => {
-                        M.toast({html: `Note: ${decodeURIComponent(bulkError)}`, classes: 'orange darken-1', displayLength: 6000});
-                     }, 500); // Delay slightly so it doesn't overlap too much
-                 }
-            } else if (!isNaN(count) && count === 0 && bulkError) {
-                 // Case: bulk add attempt resulted in 0 added servers *and* an error message
-                 M.toast({html: `Bulk Add Warning: ${decodeURIComponent(bulkError)}`, classes: 'orange darken-1', displayLength: 6000});
-                 toastShown = true;
-            } else {
-                // Generic bulk success message if count isn't parsed but param exists
-                M.toast({html: `Bulk operation completed.`, classes: 'green lighten-1', displayLength: 4000});
-                toastShown = true;
-            }
-        } else if (updateSuccess) {
-            M.toast({html: `Server "${decodeURIComponent(updateSuccess)}" successfully updated!`, classes: 'green lighten-1', displayLength: 4000});
-            toastShown = true;
-        } else if (bulkError) { // Handle bulk error only if no success message was generated
-            M.toast({html: `Bulk Add Error: ${decodeURIComponent(bulkError)}`, classes: 'red darken-1', displayLength: 6000});
-            toastShown = true;
-        } else if (bulkInfo) { // Handle bulk info only if nothing else was shown
-             M.toast({html: `Bulk Add Info: ${decodeURIComponent(bulkInfo)}`, classes: 'blue lighten-1 black-text', displayLength: 5000});
-             toastShown = true;
-        }
-
-        // Remove query parameters from URL after processing toasts
         if (toastShown && window.history.replaceState) {
             const cleanURL = window.location.protocol + "//" + window.location.host + window.location.pathname;
-            // Use setTimeout to allow the toast animation to start before changing URL
-            setTimeout(() => {
-                 window.history.replaceState({ path: cleanURL }, '', cleanURL);
-            }, 100);
+            setTimeout(() => { window.history.replaceState({ path: cleanURL }, '', cleanURL); }, 100);
         }
-        // --- END Toast Logic ---
 
-    }); // End DOMContentLoaded
+        const saveButtonMain = document.getElementById('save-manual-config-btn-main');
+        if (saveButtonMain) {
+            saveButtonMain.addEventListener('htmx:afterOnLoad', function (evt) {
+                const messageArea = document.getElementById('manual-config-message-area-main');
+                if (evt.detail.xhr.status === 200) {
+                    messageArea.innerHTML = `<span class="green-text text-darken-1"><i class="material-icons tiny left">check_circle</i>${evt.detail.xhr.responseText}</span>`;
+                } else {
+                     messageArea.innerHTML = `<span class="red-text text-darken-1"><i class="material-icons tiny left">error</i>Error: ${evt.detail.xhr.responseText || 'Failed to save.'}</span>`;
+                }
+                setTimeout(() => { messageArea.innerHTML = 'Load from disk or paste your config.'; }, 5000);
+            });
+        }
+        if (manualConfigTextarea) {
+            manualConfigTextarea.addEventListener('htmx:afterOnLoad', function(evt){
+                const messageArea = document.getElementById('manual-config-message-area-main');
+                 if (evt.detail.target.id === 'manual-config-content-area-main' && evt.detail.xhr.status === 200) {
+                    messageArea.innerHTML = 'Config reloaded from disk.';
+                    M.textareaAutoResize(manualConfigTextarea);
+                    const label = document.querySelector('label[for="manual-config-content-area-main"]');
+                    if (label) label.classList.add('active'); 
+                } else if (evt.detail.target.id === 'manual-config-content-area-main') {
+                    messageArea.innerHTML = `<span class="red-text text-darken-1"><i class="material-icons tiny left">error</i>Error: ${evt.detail.xhr.responseText || 'Failed to load.'}</span>`;
+                }
+                setTimeout(() => { messageArea.innerHTML = 'Load from disk or paste your config.'; }, 3000);
+            });
+            M.textareaAutoResize(manualConfigTextarea);
+            // Ensure label is active if textarea has content on initial load (after HTMX hx-get)
+            if (manualConfigTextarea.value.trim() !== "") {
+                const label = document.querySelector('label[for="manual-config-content-area-main"]');
+                if (label) label.classList.add('active');
+            }
+        }
+    });
 </script>
 
 {% endblock %}

@@ -4,12 +4,9 @@
 from pydantic import BaseModel, Field, field_validator, PositiveInt, HttpUrl
 from typing import Optional, List, Dict
 import os
-from urllib.parse import urlparse  # For basic URL validation
-from pathlib import Path # Added Path
+from urllib.parse import urlparse
+from pathlib import Path
 
-# Helper to get the data directory, similar to config_service
-# This ensures that default paths are constructed correctly even before config_service is fully active
-# or if McpoSettings is instantiated independently.
 def _get_default_data_dir_for_settings() -> Path:
     return Path(os.getenv("MCPO_MANAGER_DATA_DIR_EFFECTIVE", Path.home() / ".mcpo_manager_data"))
 
@@ -32,17 +29,15 @@ class McpoSettings(BaseModel):
         description="Public base URL where MCPO is accessible (e.g., http://example.com:8000). Used for generating tool links. If not set, http://127.0.0.1:PORT is used."
     )
 
-    # Log display settings
     log_auto_refresh_enabled: bool = Field(
         default=True,
         description="Enable automatic refresh of the logs block on the logs page"
     )
     log_auto_refresh_interval_seconds: PositiveInt = Field(
-        default=5,  # 5 seconds
+        default=5,
         description="Log auto-refresh interval in seconds (min: 5, max: 3600)"
     )
 
-    # Health Check fields
     health_check_enabled: bool = Field(
         default=True,
         description="Enable periodic health checks for mcpo"
@@ -64,7 +59,12 @@ class McpoSettings(BaseModel):
         description="Automatically restart mcpo after specified number of failed checks"
     )
 
-    # Validators
+    # New field for manual configuration mode
+    manual_config_mode_enabled: bool = Field(
+        default=False,
+        description="Enable manual editing of the MCPO config file. Disables UI server management and automated config generation from UI definitions."
+    )
+
     @field_validator('port')
     @classmethod
     def check_port_range(cls, value: int) -> int:
@@ -75,7 +75,7 @@ class McpoSettings(BaseModel):
     @field_validator('log_auto_refresh_interval_seconds')
     @classmethod
     def check_log_interval(cls, value: PositiveInt) -> PositiveInt:
-        if not (5 <= value <= 3600):  # 1 hour
+        if not (5 <= value <= 3600):
             raise ValueError('Log auto-refresh interval must be between 5 and 3600 seconds.')
         return value
 
@@ -104,12 +104,11 @@ class McpoSettings(BaseModel):
     @classmethod
     def check_public_base_url(cls, value: Optional[str]) -> Optional[str]:
         if value is None:
-            return None  # Empty value is allowed
+            return None
         
-        # Remove extra spaces and trailing slash
         cleaned_value = value.strip().rstrip('/')
 
-        if not cleaned_value:  # If empty string after cleaning
+        if not cleaned_value:
             return None
 
         parsed = urlparse(cleaned_value)
@@ -118,10 +117,8 @@ class McpoSettings(BaseModel):
         if parsed.scheme not in ('http', 'https'):
             raise ValueError('Public base URL must use http or https scheme.')
         
-        # Return cleaned value without trailing slash
         return cleaned_value
 
-    # Constants for hardcoded health check parameters
     INTERNAL_ECHO_SERVER_NAME: str = "echo-mcp-server-for-testing"
     INTERNAL_ECHO_SERVER_COMMAND: str = "uvx"
     INTERNAL_ECHO_SERVER_ARGS: List[str] = ["echo-mcp-server-for-testing"]

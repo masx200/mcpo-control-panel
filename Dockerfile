@@ -16,7 +16,7 @@ RUN pip install uv
 RUN uv venv
 
 # Install mcpo-control-panel using uv
-RUN uv pip install mcpo-control-panel==0.1.4
+RUN uv pip install mcpo-control-panel==0.1.5
 
 # Set working directory
 WORKDIR /app

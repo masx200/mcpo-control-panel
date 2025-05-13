@@ -250,56 +250,75 @@ async def stop_mcpo() -> Tuple[bool, str]:
 
 async def restart_mcpo_process_with_new_config(db_session: SQLModelSession, settings: McpoSettings) -> Tuple[bool, str]:
     """
-    Stops mcpo (using process object), generates config, starts mcpo (creating new object).
+    Stops mcpo, generates config (if not in manual mode), then starts mcpo.
     """
-    global _mcpo_manual_operation_in_progress # Use flag to prevent interference
+    global _mcpo_manual_operation_in_progress
 
-    # if _mcpo_manual_operation_in_progress and not settings.health_check_enabled :
-    #     logger.warning("Restart process already initiated, new restart request ignored.")
-    #     return False, "Restart process already in progress."
-
-    _mcpo_manual_operation_in_progress = True
+    _mcpo_manual_operation_in_progress = True # Assuming this flag is managed correctly elsewhere for broader ops
     logger.info("Starting MCPO restart process...")
     final_messages = []
     restart_success = False
+    config_generated_or_skipped = False
 
     try:
         # 1. Stop the current process (if running)
-        stop_success, stop_msg = await stop_mcpo() # stop_mcpo now handles the process object and flag
+        stop_success, stop_msg = await stop_mcpo()
         final_messages.append(f"Stop: {stop_msg}")
 
         if not stop_success and "not running" not in stop_msg.lower():
-            # If stopping failed and it wasn't because it was already stopped
             message = " | ".join(final_messages) + " CRITICAL ERROR: Failed to stop current MCPO process. Restart cancelled."
             logger.error(message)
-            # Flag released by stop_mcpo's finally
+            # _mcpo_manual_operation_in_progress might be released by stop_mcpo's finally
             return False, message
 
-        # 2. Generate new configuration file
-        logger.info("Restart: Generating new MCPO configuration file...")
-        config_generated = generate_mcpo_config_file(db_session, settings)
-        if not config_generated:
-            message = " | ".join(final_messages) + " ERROR: Failed to generate configuration file. MCPO start cancelled."
-            logger.error(message)
-            _mcpo_manual_operation_in_progress = False # Release flag as we abort before start
-            return False, message
-        final_messages.append("Configuration file successfully generated.")
+        # 2. Generate new configuration file IF NOT IN MANUAL MODE
+        if not settings.manual_config_mode_enabled:
+            logger.info("Restart: Automated mode. Generating new MCPO configuration file...")
+            if generate_mcpo_config_file(db_session, settings): # generate_mcpo_config_file is from config_service (facade)
+                final_messages.append("Configuration file successfully generated from database.")
+                config_generated_or_skipped = True
+            else:
+                message = " | ".join(final_messages) + " ERROR: Failed to generate configuration file. MCPO start cancelled."
+                logger.error(message)
+                _mcpo_manual_operation_in_progress = False # Release flag as we abort
+                return False, message
+        else:
+            logger.info("Restart: Manual config mode enabled. Skipping automatic configuration file generation.")
+            final_messages.append("Manual mode: Configuration file generation skipped.")
+            # We assume the manual config is already present and correct.
+            # generate_mcpo_config_file in lifespan would have created a default empty one if it was missing.
+            config_generated_or_skipped = True 
+            # Optionally, verify existence of settings.config_file_path here
+            if not os.path.exists(settings.config_file_path):
+                warn_msg = f"Warning: Manual config mode is on, but config file '{settings.config_file_path}' not found during restart. MCPO might fail to start."
+                logger.warning(warn_msg)
+                final_messages.append(warn_msg)
+                # Proceeding anyway, mcpo start will fail if config is truly missing
 
-        # 3. Start MCPO with the new configuration
-        logger.info("Restart: Attempting to start MCPO with the new configuration...")
-        # start_mcpo manages its own flag and resets health check counter
-        start_success, start_msg = await start_mcpo(settings)
-        final_messages.append(f"Start: {start_msg}")
-        restart_success = start_success
+        # 3. Start MCPO with the new/existing configuration
+        if config_generated_or_skipped: # Proceed only if config step was okay or skipped intentionally
+            logger.info("Restart: Attempting to start MCPO...")
+            start_success, start_msg = await start_mcpo(settings)
+            final_messages.append(f"Start: {start_msg}")
+            restart_success = start_success
+        else:
+            # This case should ideally not be hit due to earlier returns, but as a safeguard:
+            logger.error("Restart: Configuration step failed or was not properly skipped. MCPO start cancelled.")
+            restart_success = False
+            # Ensure flag is released if we somehow reach here
+            if _mcpo_manual_operation_in_progress:
+                await asyncio.sleep(0.1) # ensure flag from stop_mcpo is not interfered
+                _mcpo_manual_operation_in_progress = False
+
 
     except Exception as e:
         logger.error(f"Unexpected error during MCPO restart process: {e}", exc_info=True)
         final_messages.append(f"Critical restart error: {e}")
         restart_success = False
-        # Ensure flag is released if error happened outside start/stop
-        # if _mcpo_manual_operation_in_progress: # Avoid releasing if already released by start/stop
-        #      await asyncio.sleep(0.1)
-        #      _mcpo_manual_operation_in_progress = False
+        # Ensure flag is released if error happened outside start/stop's finally
+        if _mcpo_manual_operation_in_progress:
+             await asyncio.sleep(0.1)
+             _mcpo_manual_operation_in_progress = False
 
     return restart_success, " | ".join(final_messages)
 
