@@ -4,6 +4,8 @@
 
 ![](https://badge.mcpx.dev?type=server 'MCP Server') 
 
+[DeepWiki](https://deepwiki.com/daswer123/mcpo-control-panel)
+
 
 A web-based control panel designed to simplify the management of [MCP-to-OpenAPI (`mcpo`)](https://github.com/open-webui/mcpo) instances and their server configurations. It provides a user-friendly UI and an API for interacting with `mcpo`.
 
