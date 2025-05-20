@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 import os
 from pathlib import Path
 import asyncio
@@ -23,6 +24,9 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(level
 logger = logging.getLogger(__name__)
 
 health_check_task: Optional[asyncio.Task] = None
+
+# Load settings globally for app configuration
+mcpo_global_settings = config_service.load_mcpo_settings()
 
 @asynccontextmanager
 async def lifespan_get_session() -> AsyncGenerator[Session, None]:
@@ -105,7 +109,12 @@ async def lifespan(app: FastAPI):
 
     logger.info("MCP Manager UI lifespan finished.")
 
-app = FastAPI(title="MCP Manager UI", lifespan=lifespan)
+app = FastAPI(
+    title="MCP Manager UI",
+    lifespan=lifespan,
+    root_path=mcpo_global_settings.root_path if mcpo_global_settings else ""
+)
+app.add_middleware(ProxyHeadersMiddleware, trusted_hosts="*")
 
 APP_BASE_DIR = Path(__file__).resolve().parent
 static_dir_path = APP_BASE_DIR / "ui" / "static"

@@ -62,6 +62,15 @@ https://github.com/user-attachments/assets/dc3f11de-82f6-42ee-a72f-7181c9af0f45
     *   Utilizes Materialize CSS for styling.
     *   Persistent storage using an SQLite database (via SQLModel).
 
+## Bundled Dependencies
+
+To enhance reliability and enable deployment in offline or air-gapped environments, the MCPO Control Panel now bundles its core external frontend assets:
+*   **Materialize CSS & JavaScript**
+*   **Google Material Icons (font and CSS)**
+*   **htmx.org JavaScript**
+
+This means the application does not rely on external CDNs for these resources, ensuring it remains fully functional without internet access after initial installation.
+
 ## Installation
 
 It's recommended to use `uv` for installation if available, as it's generally faster.
@@ -169,6 +178,27 @@ python -m mcpo_control_panel --reload
 ```
 
 The application will create the specified `--config-dir` if it doesn't exist. All application data, including the SQLite database (`mcp_manager_data.db`), settings file (`mcpo_manager_settings.json`), generated MCPO configuration (`mcp_generated_config.json`), and the `mcpo` process PID file, will be stored in this directory.
+
+## Deployment Considerations
+
+### Reverse Proxy Configuration
+
+The MCPO Control Panel can be effectively run behind a reverse proxy. Here's how to configure it:
+
+*   **Proxy Headers:**
+    The application utilizes `ProxyHeadersMiddleware` from Uvicorn, which automatically respects `X-Forwarded-Proto` and `X-Forwarded-Host` headers. It's crucial to ensure your reverse proxy (e.g., Nginx, Apache, Traefik) is configured to pass these headers correctly.
+    *   `X-Forwarded-Proto`: This header should reflect the protocol used by the client to connect to the proxy. If SSL termination occurs at the proxy (i.e., clients connect via HTTPS), the proxy must set `X-Forwarded-Proto: https`.
+    *   `X-Forwarded-Host`: This header should reflect the original host requested by the client.
+
+*   **Base Path / Subpath (`root_path`):**
+    If the MCPO Control Panel is served under a specific subpath of a domain (e.g., `https://example.com/mcpmanager/`), you need to configure the `root_path` setting within the application.
+    *   This setting is available on the "MCPO Settings" page in the UI.
+    *   Set `root_path` to the subpath, including the leading slash (e.g., `/mcpmanager`).
+    *   If the application is served at the root of a domain (e.g., `https://mcp.example.com/` or `http://localhost:8083/`), the `root_path` setting should be left empty (which is its default value).
+
+    The application uses this `root_path` to correctly generate all internal links and serve static assets.
+
+**General Proxy Reminder:** Always ensure your reverse proxy is configured to set `X-Forwarded-Proto` and `X-Forwarded-Host` headers appropriately and to correctly proxy WebSocket connections if any part of the application were to use them (though MCPO Control Panel primarily uses HTTP/HTMX).
 
 ### Accessing the UI
 
