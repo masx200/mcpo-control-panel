@@ -64,6 +64,10 @@ class McpoSettings(BaseModel):
         default=False,
         description="Enable manual editing of the MCPO config file. Disables UI server management and automated config generation from UI definitions."
     )
+    root_path: str = Field(
+        default="", 
+        description="The root path for the application if running behind a reverse proxy under a subpath (e.g., /mcpmanager)."
+    )
 
     @field_validator('port')
     @classmethod
