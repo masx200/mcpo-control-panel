@@ -16,7 +16,7 @@ RUN pip install uv
 RUN uv venv
 
 # Install mcpo-control-panel using uv
-RUN uv pip install mcpo-control-panel==0.1.5
+RUN uv pip install mcpo-control-panel
 
 # Set working directory
 WORKDIR /app
@@ -35,4 +35,4 @@ RUN mkdir -p /data
 
 # Command to run the application
 # The application will use the environment variables for host, port, and config directory
-# CMD ["uv", "run", "python", "-m", "mcpo_control_panel", "--host", "${MCPO_MANAGER_HOST}", "--port", "${MCPO_MANAGER_PORT}", "--config-dir", "${MCPO_MANAGER_DATA_DIR}"]
+CMD ["uv", "run", "python", "-m", "mcpo_control_panel", "--host", "${MCPO_MANAGER_HOST}", "--port", "${MCPO_MANAGER_PORT}", "--config-dir", "${MCPO_MANAGER_DATA_DIR}"]
