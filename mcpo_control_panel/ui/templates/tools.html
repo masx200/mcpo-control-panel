@@ -2,354 +2,462 @@
 <!-- FILE: mcpo_control_panel/ui/templates/tools.html -->
 <!-- (Compact design + Base URL in header) -->
 <!-- ================================================ -->
-{% extends "base.html" %}
-
-{% block title %}Available Tools - MCP Manager{% endblock %}
-{% block page_title %}Available Tools via MCPO{% endblock %}
-{% block page_subtitle %}List of servers and their methods available through the running MCPO instance{% endblock %}
-
-{% block head_extra %}
-{# Styles for COMPACT design with URL in the header #}
+{% extends "base.html" %} {% block title %}Available Tools - MCP Manager{%
+endblock %} {% block page_title %}Available Tools via MCPO{% endblock %} {%
+block page_subtitle %}List of servers and their methods available through the
+running MCPO instance{% endblock %} {% block head_extra %} {# Styles for COMPACT
+design with URL in the header #}
 <style>
-    .collapsible-header {
-        display: flex; /* Enable Flexbox */
-        justify-content: space-between; /* Distribute space */
-        align-items: center; /* Align vertically centered */
-        padding-top: 10px;
-        padding-bottom: 10px;
-        line-height: 1.4; /* Adjust line height */
-        min-height: 50px; /* Minimum height to fit elements */
-    }
-    .collapsible-header .server-info {
-        display: flex;
-        align-items: center;
-        /* flex-grow: 0; */ /* Don't stretch the icon and name block */
-        margin-right: 15px; /* Right margin from server name */
-    }
-    .collapsible-header .server-info i.material-icons {
-        margin-right: 12px;
-        width: auto;
-    }
-     .collapsible-header .server-info strong {
-        font-weight: 500;
-     }
+  .collapsible-header {
+    display: flex; /* Enable Flexbox */
+    justify-content: space-between; /* Distribute space */
+    align-items: center; /* Align vertically centered */
+    padding-top: 10px;
+    padding-bottom: 10px;
+    line-height: 1.4; /* Adjust line height */
+    min-height: 50px; /* Minimum height to fit elements */
+  }
+  .collapsible-header .server-info {
+    display: flex;
+    align-items: center;
+    /* flex-grow: 0; */ /* Don't stretch the icon and name block */
+    margin-right: 15px; /* Right margin from server name */
+  }
+  .collapsible-header .server-info i.material-icons {
+    margin-right: 12px;
+    width: auto;
+  }
+  .collapsible-header .server-info strong {
+    font-weight: 500;
+  }
 
-     .collapsible-header .server-url-copy {
-        flex-grow: 1; /* Takes available space */
-        flex-shrink: 1; /* Allows shrinking */
-        margin: 0 10px; /* Side margins */
-        text-align: right; /* Align to the right edge */
-        overflow: hidden; /* Hide overflowing content */
-        display: flex; /* Flex for URL and button */
-        align-items: center; /* Align URL and button */
-        justify-content: flex-end; /* Push to the right edge */
-     }
+  .collapsible-header .server-url-copy {
+    flex-grow: 1; /* Takes available space */
+    flex-shrink: 1; /* Allows shrinking */
+    margin: 0 10px; /* Side margins */
+    text-align: right; /* Align to the right edge */
+    overflow: hidden; /* Hide overflowing content */
+    display: flex; /* Flex for URL and button */
+    align-items: center; /* Align URL and button */
+    justify-content: flex-end; /* Push to the right edge */
+  }
 
-    .collapsible-header .server-url-copy .header-base-url-code {
-        display: inline-block;
-        background-color: rgba(255, 255, 255, 0.1);
-        padding: 1px 5px;
-        border-radius: 3px;
-        word-break: break-all; /* Wrap long URLs */
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 0.85em; /* Smaller than main text */
-        color: #eceff1;
-        margin-right: 8px; /* Margin from button */
-        /* Max width and ellipsis if needed: */
-        /* max-width: 300px; */ /* Example */
-        /* overflow: hidden; */
-        /* text-overflow: ellipsis; */
-        /* white-space: nowrap; */
-    }
-    .collapsible-header .copy-button-header {
-        /* Copy button in the header */
-        flex-shrink: 0; /* Don't shrink the button */
-        height: 24px;
-        width: 24px;
-        line-height: 24px;
-        padding: 0;
-        vertical-align: middle; /* Added */
-    }
-     .collapsible-header .copy-button-header i {
-        line-height: 24px;
-        font-size: 1.0rem; /* Copy icon slightly smaller */
-        color: #b0bec5; /* Icon color */
-    }
-    .collapsible-header .copy-button-header:hover i {
-        color: #fff; /* White on hover */
-    }
+  .collapsible-header .server-url-copy .header-base-url-code {
+    display: inline-block;
+    background-color: rgba(255, 255, 255, 0.1);
+    padding: 1px 5px;
+    border-radius: 3px;
+    word-break: break-all; /* Wrap long URLs */
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.85em; /* Smaller than main text */
+    color: #eceff1;
+    margin-right: 8px; /* Margin from button */
+    /* Max width and ellipsis if needed: */
+    /* max-width: 300px; */ /* Example */
+    /* overflow: hidden; */
+    /* text-overflow: ellipsis; */
+    /* white-space: nowrap; */
+  }
+  .collapsible-header .copy-button-header {
+    /* Copy button in the header */
+    flex-shrink: 0; /* Don't shrink the button */
+    height: 24px;
+    width: 24px;
+    line-height: 24px;
+    padding: 0;
+    vertical-align: middle; /* Added */
+  }
+  .collapsible-header .copy-button-header i {
+    line-height: 24px;
+    font-size: 1.0rem; /* Copy icon slightly smaller */
+    color: #b0bec5; /* Icon color */
+  }
+  .collapsible-header .copy-button-header:hover i {
+    color: #fff; /* White on hover */
+  }
 
+  .collapsible-header .status-badge {
+    /* Container for the badge */
+    flex-shrink: 0; /* Don't shrink the badge */
+    margin-left: 10px; /* Left margin */
+  }
+  .collapsible-header .status-badge .badge {
+    float: none; /* Remove float */
+    margin-top: 0; /* Remove extra margin */
+    position: relative; /* For correct display */
+    top: -1px; /* Slight vertical correction */
+  }
 
-     .collapsible-header .status-badge { /* Container for the badge */
-        flex-shrink: 0; /* Don't shrink the badge */
-        margin-left: 10px; /* Left margin */
-     }
-     .collapsible-header .status-badge .badge {
-        float: none; /* Remove float */
-        margin-top: 0; /* Remove extra margin */
-        position: relative; /* For correct display */
-        top: -1px; /* Slight vertical correction */
-     }
+  .collapsible-body {
+    background-color: #455a64;
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+  }
 
-    .collapsible-body {
-        background-color: #455a64;
-        padding: 15px 20px;
-        border-bottom: 1px solid rgba(0,0,0,0.2);
-    }
+  /* If the docs button remains in the body */
+  .docs-button-block {
+    margin-bottom: 18px;
+    padding: 5px 0;
+  }
+  .docs-button-block strong {
+    display: inline-block;
+    margin-right: 10px;
+    color: #b0bec5;
+    font-weight: 500;
+    font-size: 0.9em;
+  }
+  .docs-button-block .copy-button {
+    /* Docs button styles if kept in body */
+    margin-left: 0;
+    vertical-align: middle;
+    height: 26px;
+    width: 26px;
+    line-height: 26px;
+    padding: 0;
+  }
+  .docs-button-block .copy-button i {
+    line-height: 26px;
+    font-size: 1.2rem;
+    color: #cfd8dc;
+  }
+  .docs-button-block .copy-button:hover i {
+    color: #fff;
+  }
 
-    /* If the docs button remains in the body */
-    .docs-button-block {
-        margin-bottom: 18px;
-        padding: 5px 0;
-    }
-     .docs-button-block strong {
-        display: inline-block;
-        margin-right: 10px;
-        color: #b0bec5;
-        font-weight: 500;
-        font-size: 0.9em;
-     }
-     .docs-button-block .copy-button { /* Docs button styles if kept in body */
-        margin-left: 0;
-        vertical-align: middle;
-        height: 26px;
-        width: 26px;
-        line-height: 26px;
-        padding: 0;
-    }
-    .docs-button-block .copy-button i {
-        line-height: 26px;
-        font-size: 1.2rem;
-        color: #cfd8dc;
-    }
-    .docs-button-block .copy-button:hover i {
-        color: #fff;
-    }
-
-
-    /* Other styles (methods-header, method-item-compact, etc.) remain as they were */
-    .methods-header { margin-bottom: 15px; padding-left: 5px; font-size: 1.05em; color: #cfd8dc; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 8px; }
-    .methods-header i { vertical-align: bottom; margin-right: 5px; font-size: 1.2em; }
-    .method-item-compact { margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-    .method-item-compact:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-    .method-item-compact .method-path { display: block; margin-bottom: 5px; }
-    .method-item-compact .method-path code { background-color: rgba(0,0,0, 0.3); padding: 2px 5px; border-radius: 3px; font-size: 0.95em; color: #f5f5f5; }
-    .method-item-compact .method-path i { font-size: 1em; vertical-align: middle; margin-right: 4px; color: #90a4ae; }
-    .method-item-compact .method-details { padding-left: 25px; font-size: 0.9em; }
-    .method-item-compact .method-details p { margin: 2px 0; color: #eceff1; line-height: 1.4; }
-    .method-item-compact .method-details p.description { color: #b0bec5; font-size: 0.95em; }
-    .method-item-compact .method-details strong { font-weight: 500; color: #90a4ae; margin-right: 5px; }
-    .method-item-compact .method-details i.tiny { font-size: 1em; vertical-align: middle; margin-right: 3px; color: #90a4ae; }
-    .collapsible-body .status-message { padding: 10px; border-radius: 3px; margin-top: 10px; font-size: 0.95em; }
-    .collapsible-body .status-message.error { background-color: rgba(255, 82, 82, 0.2); border-left: 3px solid #ff5252; color: #ffcdd2; }
-    .collapsible-body .status-message.skipped { background-color: rgba(158, 158, 158, 0.2); border-left: 3px solid #9e9e9e; color: #e0e0e0; }
-    .collapsible-body .status-message.no-methods { background-color: rgba(255, 167, 38, 0.15); border-left: 3px solid #ffa726; color: #ffe0b2; }
-    .collapsible-body .status-message i { vertical-align: middle; margin-right: 5px; }
-
+  /* Other styles (methods-header, method-item-compact, etc.) remain as they were */
+  .methods-header {
+    margin-bottom: 15px;
+    padding-left: 5px;
+    font-size: 1.05em;
+    color: #cfd8dc;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 8px;
+  }
+  .methods-header i {
+    vertical-align: bottom;
+    margin-right: 5px;
+    font-size: 1.2em;
+  }
+  .method-item-compact {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  .method-item-compact:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+  .method-item-compact .method-path {
+    display: block;
+    margin-bottom: 5px;
+  }
+  .method-item-compact .method-path code {
+    background-color: rgba(0, 0, 0, 0.3);
+    padding: 2px 5px;
+    border-radius: 3px;
+    font-size: 0.95em;
+    color: #f5f5f5;
+  }
+  .method-item-compact .method-path i {
+    font-size: 1em;
+    vertical-align: middle;
+    margin-right: 4px;
+    color: #90a4ae;
+  }
+  .method-item-compact .method-details {
+    padding-left: 25px;
+    font-size: 0.9em;
+  }
+  .method-item-compact .method-details p {
+    margin: 2px 0;
+    color: #eceff1;
+    line-height: 1.4;
+  }
+  .method-item-compact .method-details p.description {
+    color: #b0bec5;
+    font-size: 0.95em;
+  }
+  .method-item-compact .method-details strong {
+    font-weight: 500;
+    color: #90a4ae;
+    margin-right: 5px;
+  }
+  .method-item-compact .method-details i.tiny {
+    font-size: 1em;
+    vertical-align: middle;
+    margin-right: 3px;
+    color: #90a4ae;
+  }
+  .collapsible-body .status-message {
+    padding: 10px;
+    border-radius: 3px;
+    margin-top: 10px;
+    font-size: 0.95em;
+  }
+  .collapsible-body .status-message.error {
+    background-color: rgba(255, 82, 82, 0.2);
+    border-left: 3px solid #ff5252;
+    color: #ffcdd2;
+  }
+  .collapsible-body .status-message.skipped {
+    background-color: rgba(158, 158, 158, 0.2);
+    border-left: 3px solid #9e9e9e;
+    color: #e0e0e0;
+  }
+  .collapsible-body .status-message.no-methods {
+    background-color: rgba(255, 167, 38, 0.15);
+    border-left: 3px solid #ffa726;
+    color: #ffe0b2;
+  }
+  .collapsible-body .status-message i {
+    vertical-align: middle;
+    margin-right: 5px;
+  }
 </style>
 
 {# JS for URL copying - moved to head so function is available before use #}
 <script>
-    function copyToolUrlToClipboard(buttonElement, urlToCopy, event) {
-        // Prevent event bubbling to avoid triggering collapsible
-        if (event) {
-            event.stopPropagation();
-        }
-
-        if (!navigator.clipboard) {
-            M.toast({html: 'Copying not supported.', classes: 'red lighten-1'});
-            return;
-        }
-        navigator.clipboard.writeText(urlToCopy).then(() => {
-            M.toast({html: 'URL copied!', classes: 'green lighten-1', displayLength: 2000});
-            const icon = buttonElement.querySelector('i');
-            const originalIcon = icon.innerText;
-            const originalColor = icon.style.color;
-            if (icon) {
-                icon.innerText = 'check';
-                icon.style.color = '#4caf50'; // Green color for check
-            }
-            setTimeout(() => {
-                if (icon) {
-                    icon.innerText = originalIcon;
-                    icon.style.color = originalColor; // Restore original color
-                }
-            }, 2000);
-        }).catch(err => {
-            console.error('Error copying URL: ', err);
-            M.toast({html: 'Failed to copy URL.', classes: 'red lighten-1'});
-        });
+  function copyToolUrlToClipboard(buttonElement, urlToCopy, event) {
+    // Prevent event bubbling to avoid triggering collapsible
+    if (event) {
+      event.stopPropagation();
     }
+
+    if (!navigator.clipboard) {
+      M.toast({ html: "Copying not supported.", classes: "red lighten-1" });
+      return;
+    }
+    navigator.clipboard.writeText(urlToCopy).then(() => {
+      M.toast({
+        html: "URL copied!",
+        classes: "green lighten-1",
+        displayLength: 2000,
+      });
+      const icon = buttonElement.querySelector("i");
+      const originalIcon = icon.innerText;
+      const originalColor = icon.style.color;
+      if (icon) {
+        icon.innerText = "check";
+        icon.style.color = "#4caf50"; // Green color for check
+      }
+      setTimeout(() => {
+        if (icon) {
+          icon.innerText = originalIcon;
+          icon.style.color = originalColor; // Restore original color
+        }
+      }, 2000);
+    }).catch((err) => {
+      console.error("Error copying URL: ", err);
+      M.toast({ html: "Failed to copy URL.", classes: "red lighten-1" });
+    });
+  }
 </script>
-{% endblock %}
-
-{% block content %}
-
-{# Manager error messages and MCPO status (remain unchanged) #}
-{% if error_message %}
+{% endblock %} {% block content %} {# Manager error messages and MCPO status
+(remain unchanged) #} {% if error_message %}
 <div class="card-panel red lighten-3 black-text">
-    <strong><i class="material-icons left">error_outline</i>Manager Error:</strong> {{ error_message }}
+  <strong><i class="material-icons left">error_outline</i>Manager Error:</strong
+  > {{ error_message }}
+</div>
+{% endif %} {% if tools_data.status == "RUNNING" %} {# Base URL notification
+(remains unchanged) #} {% if not
+tools_data.base_url_for_links.startswith('http://127.0.0.1') %}
+<div
+  class="card-panel teal lighten-5 blue-grey-text text-darken-3"
+  style="padding: 10px; margin-bottom: 20px"
+>
+  <i class="material-icons left tiny">info</i>Links and base URLs are generated
+  using the public address: <code class="black-text"
+  >{{ tools_data.base_url_for_links }}</code> (from <a
+    href="{{ url_for('ui_edit_mcpo_settings_form') }}"
+  >settings</a>).
+</div>
+{% else %}
+<div
+  class="card-panel yellow lighten-4 blue-grey-text text-darken-3"
+  style="padding: 10px; margin-bottom: 20px"
+>
+  <i class="material-icons left tiny">warning</i>Links and base URLs are
+  generated using the local address: <code class="black-text"
+  >{{ tools_data.base_url_for_links }}</code>. It might not be accessible
+  externally. You can specify a public URL in <a
+    href="{{ url_for('ui_edit_mcpo_settings_form') }}"
+  >settings</a>.
+</div>
+{% endif %} {% if tools_data.servers %}
+<ul
+  class="collapsible popout blue-grey darken-3 white-text"
+  data-collapsible="accordion"
+>
+  {% for server_name, server_data in tools_data.servers.items() %} {# Calculate
+  the server base URL HERE so it's available in the header #} {% set
+  server_base_url = tools_data.base_url_for_links ~ '/' ~ server_name if
+  server_data.status != "SKIPPED" else "" %}
+  <li>
+    {# Collapsible HEADER: Name, URL+Copy, Status #}
+    <div class="collapsible-header blue-grey darken-1 waves-effect waves-light">
+      {# Block with icon and server name #}
+      <div class="server-info">
+        <i class="material-icons">dns</i>
+        <strong>{{ server_name }}</strong>
+      </div>
+
+      {# Block with Base URL and copy button (only if not SKIPPED) #} {% if
+      server_data.status != "SKIPPED" %}
+      <div class="server-url-copy">
+        <code
+          class="header-base-url-code tooltipped"
+          data-position="top"
+          data-tooltip="{{ server_base_url }}"
+        >{{ server_base_url }}</code>
+        <button
+          class="btn-floating btn-small waves-effect waves-light transparent tooltipped copy-button-header"
+          data-position="top"
+          data-tooltip="Copy Base URL"
+          onclick="event.stopPropagation(); copyToolUrlToClipboard(this, '{{ server_base_url | e }}', event);"
+        >
+          <i class="material-icons">content_copy</i>
+        </button>
+      </div>
+      {% else %}
+      <div class="server-url-copy"></div> {# Empty block to maintain flex
+      structure #} {% endif %} {# Status block #}
+      <div class="status-badge">
+        {% if server_data.status == "OK" %}
+        <span
+          class="new badge green tooltipped"
+          data-badge-caption="OK"
+          data-position="top"
+          data-tooltip="Tools loaded successfully"
+        ></span>
+        {% elif server_data.status == "SKIPPED" %}
+        <span
+          class="new badge grey tooltipped"
+          data-badge-caption="Skipped"
+          data-position="top"
+          data-tooltip="{{ server_data.error_message }}"
+        ></span>
+        {% else %} {# ERROR #}
+        <span
+          class="new badge red tooltipped"
+          data-badge-caption="ERROR"
+          data-position="top"
+          data-tooltip="{{ server_data.error_message | default('Failed to load tools', true) }}"
+        ></span>
+        {% endif %}
+      </div>
+    </div>
+
+    {# Collapsible BODY: Server details #}
+    <div class="collapsible-body">
+      {# Open documentation button (kept in the body) #} {% if
+      server_data.status != "SKIPPED" %}
+      <div class="docs-button-block">
+        <strong>Documentation:</strong>
+        {# Determine local port for docs link (assuming it might differ from
+        public_base_url) #} {% set docs_local_port = '8000' %} {# Default #} {%
+        if tools_data.base_url_for_links.startswith('http://127.0.0.1') and ':'
+        in tools_data.base_url_for_links %} {% set docs_local_port =
+        tools_data.base_url_for_links.split(':')[-1] %} {% elif ':' in
+        request.base_url.netloc %} {# Fallback to request host if needed, though
+        settings URL is preferred #} {% set docs_local_port =
+        request.base_url.netloc.split(':')[-1] %} {% endif %}
+
+        <a
+          href="{{ tools_data.base_url_for_links }}/{{ server_name }}/docs"
+          target="_blank"
+          class="btn-floating btn-small waves-effect waves-light transparent tooltipped copy-button"
+          data-position="top"
+          data-tooltip="Open Swagger UI documentation "
+        >
+          <i class="material-icons">description</i>
+        </a>
+      </div>
+      <div
+        class="divider"
+        style="background-color: rgba(255, 255, 255, 0.1); margin: 10px 0 15px 0"
+      >
+      </div>
+      {% elif server_data.status == "SKIPPED" %} {# Message for skipped server
+      (remains in body) #}
+      <div class="status-message skipped">
+        <i class="material-icons left tiny">skip_next</i>
+        <span>Server skipped: {{ server_data.error_message }}</span>
+      </div>
+      {% endif %} {# Processing the list of methods (tools) - no changes #} {%
+      if server_data.status == "OK" %} {% if server_data.tools %}
+      <h6 class="methods-header">
+        <i class="material-icons">settings_ethernet</i>Available Methods ({{
+        server_data.tools|length }}):
+      </h6>
+      <div>
+        {% for tool in server_data.tools %}
+        <div class="method-item-compact">
+          <div class="method-path">
+            <i class="material-icons tiny">route</i>
+            <code>{{ tool.path }}</code>
+          </div>
+          <div class="method-details">
+            {% if tool.summary and tool.summary != "No summary" %}
+            <p>
+              <i class="material-icons tiny">short_text</i>
+              <strong>Summary:</strong> {{ tool.summary }}
+            </p>
+            {% endif %} {% if tool.description and tool.description != "No
+            description" %}
+            <p class="description">
+              <i class="material-icons tiny">description</i>
+              <strong>Description:</strong> {{ tool.description }}
+            </p>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="status-message no-methods">
+        <i class="material-icons left tiny">info_outline</i>
+        No methods found for this server in its OpenAPI specification.
+      </div>
+      {% endif %} {% elif server_data.status == "ERROR" %}
+      <div class="status-message error">
+        <i class="material-icons left tiny">warning</i>
+        <span>Error getting method information: {{ server_data.error_message
+          }}</span>
+      </div>
+      {% endif %}
+    </div> {# End collapsible-body #}
+  </li>
+  {% endfor %}
+</ul> {# End collapsible #} {% elif not error_message %} {# Message when MCPO is
+running but no servers defined #}
+<div class="card-panel orange lighten-4 black-text">
+  <i class="material-icons left">info_outline</i>
+  MCPO is running, but no active server definitions found...
+</div>
+{% endif %} {% elif tools_data.status == "STOPPED" %} {# Message when MCPO is
+stopped #}
+<div class="card-panel orange lighten-4 black-text">
+  <i class="material-icons left">power_settings_new</i>
+  MCPO process is currently stopped...
+</div>
+{% else %} {# ERROR status #} {# Message when MCPO status is ERROR #}
+<div class="card-panel red lighten-3 black-text">
+  <i class="material-icons left">error_outline</i>
+  MCPO process is not running correctly...
 </div>
 {% endif %}
 
-{% if tools_data.status == "RUNNING" %}
-    {# Base URL notification (remains unchanged) #}
-    {% if not tools_data.base_url_for_links.startswith('http://127.0.0.1') %}
-        <div class="card-panel teal lighten-5 blue-grey-text text-darken-3" style="padding: 10px; margin-bottom: 20px;">
-            <i class="material-icons left tiny">info</i>Links and base URLs are generated using the public address: <code class="black-text">{{ tools_data.base_url_for_links }}</code> (from <a href="{{ url_for('ui_edit_mcpo_settings_form') }}">settings</a>).
-        </div>
-    {% else %}
-        <div class="card-panel yellow lighten-4 blue-grey-text text-darken-3" style="padding: 10px; margin-bottom: 20px;">
-             <i class="material-icons left tiny">warning</i>Links and base URLs are generated using the local address: <code class="black-text">{{ tools_data.base_url_for_links }}</code>. It might not be accessible externally. You can specify a public URL in <a href="{{ url_for('ui_edit_mcpo_settings_form') }}">settings</a>.
-        </div>
-    {% endif %}
-
-    {% if tools_data.servers %}
-        <ul class="collapsible popout blue-grey darken-3 white-text" data-collapsible="accordion">
-            {% for server_name, server_data in tools_data.servers.items() %}
-            {# Calculate the server base URL HERE so it's available in the header #}
-            {% set server_base_url = tools_data.base_url_for_links ~ '/' ~ server_name if server_data.status != "SKIPPED" else "" %}
-            <li>
-                {# Collapsible HEADER: Name, URL+Copy, Status #}
-                <div class="collapsible-header blue-grey darken-1 waves-effect waves-light">
-                    {# Block with icon and server name #}
-                    <div class="server-info">
-                        <i class="material-icons">dns</i>
-                        <strong>{{ server_name }}</strong>
-                    </div>
-
-                    {# Block with Base URL and copy button (only if not SKIPPED) #}
-                    {% if server_data.status != "SKIPPED" %}
-                    <div class="server-url-copy">
-                         <code class="header-base-url-code tooltipped"
-                               data-position="top"
-                               data-tooltip="{{ server_base_url }}">{{ server_base_url }}</code>
-                         <button class="btn-floating btn-small waves-effect waves-light transparent tooltipped copy-button-header"
-                                 data-position="top" data-tooltip="Copy Base URL"
-                                 onclick="event.stopPropagation(); copyToolUrlToClipboard(this, '{{ server_base_url | e }}', event);">
-                             <i class="material-icons">content_copy</i>
-                         </button>
-                    </div>
-                    {% else %}
-                     <div class="server-url-copy"></div> {# Empty block to maintain flex structure #}
-                    {% endif %}
-
-                    {# Status block #}
-                    <div class="status-badge">
-                        {% if server_data.status == "OK" %}
-                            <span class="new badge green tooltipped" data-badge-caption="OK" data-position="top" data-tooltip="Tools loaded successfully"></span>
-                        {% elif server_data.status == "SKIPPED" %}
-                             <span class="new badge grey tooltipped" data-badge-caption="Skipped" data-position="top" data-tooltip="{{ server_data.error_message }}"></span>
-                        {% else %} {# ERROR #}
-                            <span class="new badge red tooltipped" data-badge-caption="ERROR" data-position="top" data-tooltip="{{ server_data.error_message | default('Failed to load tools', true) }}"></span>
-                        {% endif %}
-                    </div>
-                </div>
-
-                {# Collapsible BODY: Server details #}
-                <div class="collapsible-body">
-
-                    {# Open documentation button (kept in the body) #}
-                    {% if server_data.status != "SKIPPED" %}
-                         <div class="docs-button-block">
-                             <strong>Documentation:</strong>
-                             {# Determine local port for docs link (assuming it might differ from public_base_url) #}
-                             {% set docs_local_port = '8000' %} {# Default #}
-                             {% if tools_data.base_url_for_links.startswith('http://127.0.0.1') and ':' in tools_data.base_url_for_links %}
-                                {% set docs_local_port = tools_data.base_url_for_links.split(':')[-1] %}
-                             {% elif ':' in request.base_url.netloc %} {# Fallback to request host if needed, though settings URL is preferred #}
-                                {% set docs_local_port = request.base_url.netloc.split(':')[-1] %}
-                             {% endif %}
-
-                             <a href="{{ tools_data.base_url_for_links }}/{{ server_name }}/docs" target="_blank"
-                                class="btn-floating btn-small waves-effect waves-light transparent tooltipped copy-button"
-                                data-position="top" data-tooltip="Open Swagger UI documentation ">
-                                 <i class="material-icons">description</i>
-                             </a>
-                         </div>
-                         <div class="divider" style="background-color: rgba(255,255,255,0.1); margin: 10px 0 15px 0;"></div>
-                    {% elif server_data.status == "SKIPPED" %}
-                         {# Message for skipped server (remains in body) #}
-                          <div class="status-message skipped">
-                                <i class="material-icons left tiny">skip_next</i>
-                                <span>Server skipped: {{ server_data.error_message }}</span>
-                          </div>
-                    {% endif %}
-
-                    {# Processing the list of methods (tools) - no changes #}
-                    {% if server_data.status == "OK" %}
-                        {% if server_data.tools %}
-                            <h6 class="methods-header">
-                                <i class="material-icons">settings_ethernet</i>Available Methods ({{ server_data.tools|length }}):
-                            </h6>
-                            <div>
-                                {% for tool in server_data.tools %}
-                                    <div class="method-item-compact">
-                                        <div class="method-path">
-                                            <i class="material-icons tiny">route</i>
-                                            <code>{{ tool.path }}</code>
-                                        </div>
-                                        <div class="method-details">
-                                            {% if tool.summary and tool.summary != "No summary" %}
-                                            <p><i class="material-icons tiny">short_text</i><strong>Summary:</strong> {{ tool.summary }}</p>
-                                            {% endif %}
-                                            {% if tool.description and tool.description != "No description" %}
-                                            <p class="description"><i class="material-icons tiny">description</i><strong>Description:</strong> {{ tool.description }}</p>
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        {% else %}
-                             <div class="status-message no-methods">
-                                <i class="material-icons left tiny">info_outline</i>
-                                No methods found for this server in its OpenAPI specification.
-                            </div>
-                        {% endif %}
-                    {% elif server_data.status == "ERROR" %}
-                         <div class="status-message error">
-                            <i class="material-icons left tiny">warning</i>
-                            <span>Error getting method information: {{ server_data.error_message }}</span>
-                         </div>
-                    {% endif %}
-
-                </div> {# End collapsible-body #}
-            </li>
-            {% endfor %}
-        </ul> {# End collapsible #}
-
-    {% elif not error_message %}
-        {# Message when MCPO is running but no servers defined #}
-        <div class="card-panel orange lighten-4 black-text">
-            <i class="material-icons left">info_outline</i>
-            MCPO is running, but no active server definitions found...
-        </div>
-    {% endif %}
-
-{% elif tools_data.status == "STOPPED" %}
-    {# Message when MCPO is stopped #}
-    <div class="card-panel orange lighten-4 black-text">
-        <i class="material-icons left">power_settings_new</i>
-        MCPO process is currently stopped...
-    </div>
-{% else %} {# ERROR status #}
-    {# Message when MCPO status is ERROR #}
-    <div class="card-panel red lighten-3 black-text">
-        <i class="material-icons left">error_outline</i>
-        MCPO process is not running correctly...
-    </div>
-{% endif %}
-
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var tooltips = document.querySelectorAll('.tooltipped');
-        M.Tooltip.init(tooltips);
+  document.addEventListener("DOMContentLoaded", function () {
+    var tooltips = document.querySelectorAll(".tooltipped");
+    M.Tooltip.init(tooltips);
 
-        var collapsibles = document.querySelectorAll('.collapsible');
-        M.Collapsible.init(collapsibles, {
-            accordion: true
-        });
+    var collapsibles = document.querySelectorAll(".collapsible");
+    M.Collapsible.init(collapsibles, {
+      accordion: true,
     });
+  });
 </script>
 
 {% endblock %}

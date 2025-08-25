@@ -1,58 +1,87 @@
 <!-- ================================================ -->
 <!-- FILE: mcpo_control_panel/ui/templates/_server_row.html -->
 <!-- ================================================ -->
-{# Partial template for a single server row in the table #}
-{# Expects 'server' variable (ServerDefinitionRead) #}
+{# Partial template for a single server row in the table #} {# Expects 'server'
+variable (ServerDefinitionRead) #}
 <tr id="server-row-{{ server.id }}">
-    <td>
-        <!-- Materialize Switch -->
-        <div class="switch">
-            <label>
-                <input
-                    type="checkbox"
-                    name="is_enabled"
-                    {% if server.is_enabled %}checked{% endif %}
-                    hx-post="{{ url_for('toggle_server', server_id=server.id) }}"
-                    hx-target="closest tr"
-                    hx-swap="outerHTML"
-                    title="Enable/disable in generated config"
-                    aria-label="Enable/Disable server">
-                <span class="lever"></span>
-            </label>
-        </div>
-    </td>
-    <td style="font-weight: 500;">{{ server.name }}</td>
-    <td><span class="chip blue-grey lighten-1 white-text">{{ server.server_type }}</span></td>
-    <td>
-        {% if server.server_type == 'stdio' %}
-            <div style="line-height: 1.4; font-size: 0.9em;" class="grey-text text-darken-2">
-               <i class="tiny material-icons" style="vertical-align: middle;">terminal</i> Cmd: <code>{{ server.command if server.command else 'N/A' }}</code><br>
-               <i class="tiny material-icons" style="vertical-align: middle;">list</i> Args: <code title="{{ server.args|join(' ') if server.args }}">{{ server.args|length }} arg(s)</code><br>
-               <i class="tiny material-icons" style="vertical-align: middle;">subtitles</i> Env: <code title="{{ server.env_vars|tojson if server.env_vars }}">{{ server.env_vars|length }} var(s)</code>
-            </div>
-        {% elif server.server_type in ['sse', 'streamable_http'] %}
-             <div style="line-height: 1.4; font-size: 0.9em;" class="grey-text text-darken-2">
-                <i class="tiny material-icons" style="vertical-align: middle;">link</i> URL: <code>{{ server.url if server.url else 'N/A' }}</code>
-            </div>
-        {% else %}
-            <span class="grey-text">-</span>
-        {% endif %}
-    </td>
-    <td>
-        <a href="{{ url_for('ui_edit_server_form', server_id=server.id) }}"
-           class="btn-floating btn-small waves-effect waves-light blue tooltipped"
-           data-position="top" data-tooltip="Edit">
-           <i class="material-icons">edit</i>
-        </a>
-        <button
-            hx-delete="{{ url_for('delete_server', server_id=server.id) }}"
-            hx-target="closest tr"
-            hx-swap="outerHTML"
-            hx-confirm="Are you sure you want to delete the definition '{{ server.name | e }}'?"
-            class="btn-floating btn-small waves-effect waves-light red tooltipped"
-            data-position="top" data-tooltip="Delete"
-            style="margin-left: 5px;">
-            <i class="material-icons">delete</i>
-        </button>
-    </td>
+  <td>
+    <!-- Materialize Switch -->
+    <div class="switch">
+      <label>
+        <input
+          type="checkbox"
+          name="is_enabled"
+          {%
+          if
+          server.is_enabled
+          %}checked{%
+          endif
+          %}
+          hx-post="{{ url_for('toggle_server', server_id=server.id) }}"
+          hx-target="closest tr"
+          hx-swap="outerHTML"
+          title="Enable/disable in generated config"
+          aria-label="Enable/Disable server"
+        >
+        <span class="lever"></span>
+      </label>
+    </div>
+  </td>
+  <td style="font-weight: 500">{{ server.name }}</td>
+  <td>
+    <span class="chip blue-grey lighten-1 white-text"
+    >{{ server.server_type }}</span>
+  </td>
+  <td>
+    {% if server.server_type == 'stdio' %}
+    <div
+      style="line-height: 1.4; font-size: 0.9em"
+      class="grey-text text-darken-2"
+    >
+      <i class="tiny material-icons" style="vertical-align: middle">terminal</i>
+      Cmd: <code>{{ server.command if server.command else 'N/A' }}</code>
+      <br>
+      <i class="tiny material-icons" style="vertical-align: middle">list</i>
+      Args: <code title="{{ server.args|join(' ') if server.args }}"
+      >{{ server.args|length }} arg(s)</code>
+      <br>
+      <i class="tiny material-icons" style="vertical-align: middle"
+      >subtitles</i> Env: <code
+        title="{{ server.env_vars|tojson if server.env_vars }}"
+      >{{ server.env_vars|length }} var(s)</code>
+    </div>
+    {% elif server.server_type in ['sse', 'streamable_http'] %}
+    <div
+      style="line-height: 1.4; font-size: 0.9em"
+      class="grey-text text-darken-2"
+    >
+      <i class="tiny material-icons" style="vertical-align: middle">link</i>
+      URL: <code>{{ server.url if server.url else 'N/A' }}</code>
+    </div>
+    {% else %}
+    <span class="grey-text">-</span>
+    {% endif %}
+  </td>
+  <td>
+    <a
+      href="{{ url_for('ui_edit_server_form', server_id=server.id) }}"
+      class="btn-floating btn-small waves-effect waves-light blue tooltipped"
+      data-position="top"
+      data-tooltip="Edit"
+    >
+      <i class="material-icons">edit</i>
+    </a>
+    <button
+      hx-delete="{{ url_for('delete_server', server_id=server.id) }}"
+      hx-target="closest tr"
+      hx-swap="outerHTML"
+      hx-confirm="Are you sure you want to delete the definition '{{ server.name | e }}'?"
+      class="btn-floating btn-small waves-effect waves-light red tooltipped"
+      data-position="top"
+      data-tooltip="Delete"
+      style="margin-left: 5px"
+    >
+      <i class="material-icons">delete</i>
+    </button>
+  </td>
 </tr>

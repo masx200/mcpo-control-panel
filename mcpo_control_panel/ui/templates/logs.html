@@ -1,169 +1,181 @@
-{% extends "base.html" %}
-
-{% block title %}MCPO Logs - MCP Manager{% endblock %}
-{% block page_title %}MCPO Process Logs{% endblock %}
-{% block page_subtitle %}View the latest entries from the mcpo log file{% endblock %}
-
-{% block head_extra %}
+{% extends "base.html" %} {% block title %}MCPO Logs - MCP Manager{% endblock %}
+{% block page_title %}MCPO Process Logs{% endblock %} {% block page_subtitle
+%}View the latest entries from the mcpo log file{% endblock %} {% block
+head_extra %}
 <style>
-    .log-container {
-        display: block;
-        background-color: #263238;
-        color: #eceff1;
-        padding: 15px;
-        border-radius: 4px;
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 0.9em;
-        min-height: 200px;
-        max-height: 65vh;
-        overflow-y: auto;
-        white-space: pre-wrap;
-        word-break: break-word;
-        border: 1px solid rgba(0,0,0,0.2);
-    }
-    .card-action {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 15px;
-        padding: 15px 24px;
-    }
-    .auto-scroll-switch {
-        margin-top: 5px;
-    }
+  .log-container {
+    display: block;
+    background-color: #263238;
+    color: #eceff1;
+    padding: 15px;
+    border-radius: 4px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 0.9em;
+    min-height: 200px;
+    max-height: 65vh;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+  }
+  .card-action {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px 24px;
+  }
+  .auto-scroll-switch {
+    margin-top: 5px;
+  }
 </style>
-{% endblock %}
-
-{% block content %}
-
-{# MCPO Status Section #}
+{% endblock %} {% block content %} {# MCPO Status Section #}
 <div class="row">
-    <div class="col s12">
-        <div class="card blue-grey lighten-5">
-             <div class="card-content" style="padding-bottom: 10px;">
-                <span class="card-title blue-grey-text text-darken-3">Current MCPO Status</span>
-                <div id="mcpo-status-indicator-logs"
-                     hx-get="{{ url_for('get_mcpo_process_status_html') }}"
-                     hx-trigger="load, every 5s"
-                     hx-target="this"
-                     hx-swap="innerHTML"
-                     class="blue-grey-text text-darken-2"
-                     style="min-height: 50px;">
-                    <p>Loading status...</p>
-                </div>
-            </div>
+  <div class="col s12">
+    <div class="card blue-grey lighten-5">
+      <div class="card-content" style="padding-bottom: 10px">
+        <span class="card-title blue-grey-text text-darken-3"
+        >Current MCPO Status</span>
+        <div
+          id="mcpo-status-indicator-logs"
+          hx-get="{{ url_for('get_mcpo_process_status_html') }}"
+          hx-trigger="load, every 5s"
+          hx-target="this"
+          hx-swap="innerHTML"
+          class="blue-grey-text text-darken-2"
+          style="min-height: 50px"
+        >
+          <p>Loading status...</p>
         </div>
+      </div>
     </div>
+  </div>
 </div>
 
 {# Logs Section #}
 <div class="row">
-    <div class="col s12">
-        <div class="card">
-            <div class="card-content">
-                <span class="card-title">Log File Contents</span>
-                <p class="grey-text text-darken-1">
-                    File path:
-                    {% if mcpo_settings.log_file_path %}
-                        <code>{{ mcpo_settings.log_file_path }}</code>
-                        {% if log_file_path_exists %}
-                            <span class="green-text text-darken-1">(File found)</span>
-                        {% else %}
-                            <span class="red-text text-darken-1">(File NOT found!)</span>
-                        {% endif %}
-                    {% else %}
-                        <span class="orange-text text-darken-1">Log file path not configured in <a href="{{ url_for('ui_edit_mcpo_settings_form') }}">settings</a>.</span>
-                    {% endif %}
-                </p>
-                {% if mcpo_settings.log_auto_refresh_enabled %}
-                    <p class="grey-text text-darken-1" style="margin-bottom: 0;">
-                        Auto-refresh enabled every <code>{{ mcpo_settings.log_auto_refresh_interval_seconds }}</code> seconds.
-                    </p>
-                {% else %}
-                     <p class="grey-text text-darken-1" style="margin-bottom: 0;">
-                        Auto-refresh disabled. Click "Refresh" to view the latest logs.
-                    </p>
-                {% endif %}
+  <div class="col s12">
+    <div class="card">
+      <div class="card-content">
+        <span class="card-title">Log File Contents</span>
+        <p class="grey-text text-darken-1">
+          File path: {% if mcpo_settings.log_file_path %}
+          <code>{{ mcpo_settings.log_file_path }}</code>
+          {% if log_file_path_exists %}
+          <span class="green-text text-darken-1">(File found)</span>
+          {% else %}
+          <span class="red-text text-darken-1">(File NOT found!)</span>
+          {% endif %} {% else %}
+          <span class="orange-text text-darken-1"
+          >Log file path not configured in <a
+              href="{{ url_for('ui_edit_mcpo_settings_form') }}"
+            >settings</a>.</span>
+          {% endif %}
+        </p>
+        {% if mcpo_settings.log_auto_refresh_enabled %}
+        <p class="grey-text text-darken-1" style="margin-bottom: 0">
+          Auto-refresh enabled every <code>{{
+            mcpo_settings.log_auto_refresh_interval_seconds }}</code> seconds.
+        </p>
+        {% else %}
+        <p class="grey-text text-darken-1" style="margin-bottom: 0">
+          Auto-refresh disabled. Click "Refresh" to view the latest logs.
+        </p>
+        {% endif %} {% set trigger_interval = "every " ~
+        mcpo_settings.log_auto_refresh_interval_seconds ~ "s" if
+        mcpo_settings.log_auto_refresh_enabled else "never" %}
 
-                {% set trigger_interval = "every " ~ mcpo_settings.log_auto_refresh_interval_seconds ~ "s" if mcpo_settings.log_auto_refresh_enabled else "never" %}
-
-                <div id="mcpo-log-content-wrapper" style="margin-top: 20px;">
-                     <pre class="log-container" id="log-container">
+        <div id="mcpo-log-content-wrapper" style="margin-top: 20px">
+          <pre
+            class="log-container"
+            id="log-container"
+          >
                         <code id="log-code-block"
                               hx-get="{{ url_for('api_get_logs_content_html') }}?lines=200"
                               hx-trigger="load, {{ trigger_interval }}"
                               hx-target="this"
                               hx-swap="innerHTML"
                               hx-indicator="#log-spinner">Loading logs...</code>
-                     </pre>
-                    <div id="log-spinner" class="htmx-indicator center-align" style="margin-top: 10px;">
-                        <div class="preloader-wrapper small active">
-                            <div class="spinner-layer spinner-blue-only">
-                                <div class="circle-clipper left"><div class="circle"></div></div>
-                                <div class="gap-patch"><div class="circle"></div></div>
-                                <div class="circle-clipper right"><div class="circle"></div></div>
-                            </div>
-                        </div>
-                    </div>
+                     </pre
+          >
+          <div
+            id="log-spinner"
+            class="htmx-indicator center-align"
+            style="margin-top: 10px"
+          >
+            <div class="preloader-wrapper small active">
+              <div class="spinner-layer spinner-blue-only">
+                <div class="circle-clipper left">
+                  <div class="circle"></div>
                 </div>
-            </div>
-            <div class="card-action">
-                 <button class="btn waves-effect waves-light blue-grey lighten-1"
-                         hx-get="{{ url_for('api_get_logs_content_html') }}?lines=200"
-                         hx-target="#log-code-block"
-                         hx-swap="innerHTML"
-                         hx-indicator="#log-spinner">
-                     <i class="material-icons left">refresh</i>Refresh Logs
-                 </button>
-
-                 <div class="switch auto-scroll-switch">
-                    <label class="blue-grey-text text-darken-2">
-                        Auto-scroll Off
-                        <input type="checkbox" id="auto-scroll-switch" checked>
-                        <span class="lever"></span>
-                        On
-                    </label>
+                <div class="gap-patch"><div class="circle"></div></div>
+                <div class="circle-clipper right">
+                  <div class="circle"></div>
                 </div>
+              </div>
             </div>
+          </div>
         </div>
+      </div>
+      <div class="card-action">
+        <button
+          class="btn waves-effect waves-light blue-grey lighten-1"
+          hx-get="{{ url_for('api_get_logs_content_html') }}?lines=200"
+          hx-target="#log-code-block"
+          hx-swap="innerHTML"
+          hx-indicator="#log-spinner"
+        >
+          <i class="material-icons left">refresh</i>Refresh Logs
+        </button>
+
+        <div class="switch auto-scroll-switch">
+          <label class="blue-grey-text text-darken-2">
+            Auto-scroll Off
+            <input type="checkbox" id="auto-scroll-switch" checked>
+            <span class="lever"></span>
+            On
+          </label>
+        </div>
+      </div>
     </div>
+  </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const logContainer = document.getElementById('log-container');
-        const autoScrollSwitch = document.getElementById('auto-scroll-switch');
-        
-        if (!logContainer || !autoScrollSwitch) {
-            console.error("Could not find required elements for auto-scrolling");
-            return;
-        }
-        
-        // Function to scroll to bottom
-        function scrollToBottom() {
-            if (autoScrollSwitch.checked) {
-                logContainer.scrollTop = logContainer.scrollHeight;
-            }
-        }
-        
-        // Event handler after content update via HTMX
-        document.body.addEventListener('htmx:afterSwap', function(event) {
-            if (event.detail.target.id === 'log-code-block') {
-                setTimeout(scrollToBottom, 50);
-            }
-        });
-        
-        // Initial scroll
-        scrollToBottom();
-        
-        // Switch state change handler
-        autoScrollSwitch.addEventListener('change', function() {
-            if (autoScrollSwitch.checked) {
-                scrollToBottom();
-            }
-        });
+  document.addEventListener("DOMContentLoaded", function () {
+    const logContainer = document.getElementById("log-container");
+    const autoScrollSwitch = document.getElementById("auto-scroll-switch");
+
+    if (!logContainer || !autoScrollSwitch) {
+      console.error("Could not find required elements for auto-scrolling");
+      return;
+    }
+
+    // Function to scroll to bottom
+    function scrollToBottom() {
+      if (autoScrollSwitch.checked) {
+        logContainer.scrollTop = logContainer.scrollHeight;
+      }
+    }
+
+    // Event handler after content update via HTMX
+    document.body.addEventListener("htmx:afterSwap", function (event) {
+      if (event.detail.target.id === "log-code-block") {
+        setTimeout(scrollToBottom, 50);
+      }
     });
-    </script>
+
+    // Initial scroll
+    scrollToBottom();
+
+    // Switch state change handler
+    autoScrollSwitch.addEventListener("change", function () {
+      if (autoScrollSwitch.checked) {
+        scrollToBottom();
+      }
+    });
+  });
+</script>
 
 {% endblock %}

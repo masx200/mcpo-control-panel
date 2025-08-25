@@ -1,75 +1,92 @@
 <!-- ================================================ -->
 <!-- FILE: mcpo_control_panel/ui/templates/bulk_add_form.html -->
 <!-- ================================================ -->
-{% extends "base.html" %}
-
-{# Import the macro #}
-{% from "_server_form_macro.html" import render_server_form %}
-
-{% block title %}Add Servers - MCP Manager{% endblock %}
-{% block page_title %}Add Server Definitions{% endblock %}
-{% block page_subtitle %}Add a single server via form or multiple servers from JSON{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {# Import the macro #} {% from
+"_server_form_macro.html" import render_server_form %} {% block title %}Add
+Servers - MCP Manager{% endblock %} {% block page_title %}Add Server
+Definitions{% endblock %} {% block page_subtitle %}Add a single server via form
+or multiple servers from JSON{% endblock %} {% block content %}
 
 <div class="row">
-    <div class="col s12">
-        <!-- Tabs structure -->
-        <ul class="tabs tabs-fixed-width z-depth-1">
-            <li class="tab col s6"><a class="active" href="#tab-single">Add Single Server</a></li>
-            <li class="tab col s6"><a href="#tab-bulk">Bulk Add (JSON)</a></li>
-        </ul>
+  <div class="col s12">
+    <!-- Tabs structure -->
+    <ul class="tabs tabs-fixed-width z-depth-1">
+      <li class="tab col s6">
+        <a class="active" href="#tab-single">Add Single Server</a>
+      </li>
+      <li class="tab col s6"><a href="#tab-bulk">Bulk Add (JSON)</a></li>
+    </ul>
+  </div>
+
+  <!-- ==================== Tab Content: Add SINGLE server ==================== -->
+  <div id="tab-single" class="col s12" style="padding-top: 20px">
+    {% if single_server_error %}
+    <div
+      class="card-panel red lighten-4 red-text text-darken-4"
+      style="padding: 10px; margin-bottom: 15px"
+    >
+      <i class="material-icons left tiny">error_outline</i>
+      <strong>Error adding server:</strong> {{ single_server_error }}
     </div>
+    {% endif %}
 
-    <!-- ==================== Tab Content: Add SINGLE server ==================== -->
-    <div id="tab-single" class="col s12" style="padding-top: 20px;">
-        {% if single_server_error %}
-        <div class="card-panel red lighten-4 red-text text-darken-4" style="padding: 10px; margin-bottom: 15px;">
-             <i class="material-icons left tiny">error_outline</i><strong>Error adding server:</strong> {{ single_server_error }}
-        </div>
-        {% endif %}
+    <p class="grey-text text-darken-1">
+      <i class="material-icons tiny left">info_outline</i>First select "Server
+      type" to see the corresponding fields (Command/Arguments or URL).
+    </p>
 
-        <p class="grey-text text-darken-1"><i class="material-icons tiny left">info_outline</i>First select "Server type" to see the corresponding fields (Command/Arguments or URL).</p>
+    {{ render_server_form( action_url=single_add_action_url,
+    submit_button_text='Add this server', server=single_server_form_data,
+    error=None, is_add_form=True, request=request, cancel_url=url_for('ui_root')
+    ) }}
+  </div>
+  <!-- ==================== End of Tab Content: Add SINGLE server ==================== -->
 
-        {{ render_server_form(
-                action_url=single_add_action_url,
-                submit_button_text='Add this server',
-                server=single_server_form_data,
-                error=None,
-                is_add_form=True,
-                request=request,
-                cancel_url=url_for('ui_root')
-           )
-        }}
+  <!-- ==================== Tab Content: Bulk Add ==================== -->
+  <div id="tab-bulk" class="col s12" style="padding-top: 20px">
+    <!-- Error/success messages -->
+    {% if bulk_error %}
+    <div
+      class="card-panel red lighten-4 red-text text-darken-4"
+      style="padding: 10px"
+    >
+      <i class="material-icons left tiny">error_outline</i>
+      <strong>Error processing JSON:</strong> {{ bulk_error }}
     </div>
-    <!-- ==================== End of Tab Content: Add SINGLE server ==================== -->
+    {% endif %} {% if bulk_success_count is not none and bulk_success_count > 0
+    %}
+    <div
+      class="card-panel green lighten-4 green-text text-darken-4"
+      style="padding: 10px"
+    >
+      <i class="material-icons left tiny">check_circle_outline</i>
+      <strong>Success:</strong> Added {{ bulk_success_count }} server
+      definitions from JSON. <a href="{{ url_for('ui_root') }}"
+      >Return to list</a>.
+    </div>
+    {% elif bulk_success_count is not none and bulk_success_count == 0 and not
+    bulk_error %}
+    <div
+      class="card-panel orange lighten-4 orange-text text-darken-4"
+      style="padding: 10px"
+    >
+      <i class="material-icons left tiny">info_outline</i>
+      <strong>Note:</strong> No new server definitions were added from JSON
+      (they may already exist, JSON is empty/invalid, or contains errors).
+    </div>
+    {% endif %}
 
-
-    <!-- ==================== Tab Content: Bulk Add ==================== -->
-    <div id="tab-bulk" class="col s12" style="padding-top: 20px;">
-        <!-- Error/success messages -->
-        {% if bulk_error %}
-        <div class="card-panel red lighten-4 red-text text-darken-4" style="padding: 10px;">
-             <i class="material-icons left tiny">error_outline</i><strong>Error processing JSON:</strong> {{ bulk_error }}
+    <!-- JSON format hint -->
+    <ul class="collapsible" style="margin-top: 15px; margin-bottom: 25px">
+      <li>
+        <div class="collapsible-header">
+          <i class="material-icons">info_outline</i>Valid JSON Format Examples
         </div>
-        {% endif %}
-        {% if bulk_success_count is not none and bulk_success_count > 0 %}
-        <div class="card-panel green lighten-4 green-text text-darken-4" style="padding: 10px;">
-             <i class="material-icons left tiny">check_circle_outline</i><strong>Success:</strong> Added {{ bulk_success_count }} server definitions from JSON. <a href="{{ url_for('ui_root') }}">Return to list</a>.
-        </div>
-        {% elif bulk_success_count is not none and bulk_success_count == 0 and not bulk_error %}
-        <div class="card-panel orange lighten-4 orange-text text-darken-4" style="padding: 10px;">
-             <i class="material-icons left tiny">info_outline</i><strong>Note:</strong> No new server definitions were added from JSON (they may already exist, JSON is empty/invalid, or contains errors).
-        </div>
-        {% endif %}
-
-        <!-- JSON format hint -->
-        <ul class="collapsible" style="margin-top: 15px; margin-bottom: 25px;">
-            <li>
-                <div class="collapsible-header"><i class="material-icons">info_outline</i>Valid JSON Format Examples</div>
-                <div class="collapsible-body">
-                     <p><strong>Format 1: Object with "mcpServers" key</strong></p>
-                    <pre><code class="language-json" style="display: block; background: #f4f4f4; padding: 10px; border-radius: 3px;">{
+        <div class="collapsible-body">
+          <p><strong>Format 1: Object with "mcpServers" key</strong></p>
+          <pre
+          >
+<code class="language-json" style="display: block; background: #f4f4f4; padding: 10px; border-radius: 3px;">{
   "mcpServers": {
     "my-tool-name": {
       "command": "npx",
@@ -81,9 +98,12 @@
       "url": "http://localhost:8001/sse"
     }
   }
-}</code></pre>
-                    <p><strong>Format 2: Direct mapping "name": {config}</strong></p>
-                    <pre><code class="language-json" style="display: block; background: #f4f4f4; padding: 10px; border-radius: 3px;">{
+}</code></pre
+          >
+          <p><strong>Format 2: Direct mapping "name": {config}</strong></p>
+          <pre
+          >
+<code class="language-json" style="display: block; background: #f4f4f4; padding: 10px; border-radius: 3px;">{
   "tool-alpha": {
     "command": "uvx",
     "args": ["alpha-server"]
@@ -92,9 +112,12 @@
     "type": "streamable_http",
     "url": "http://service-beta/stream"
   }
-}</code></pre>
-                    <p><strong>Format 3: List of objects with "name" field</strong></p>
-                     <pre><code class="language-json" style="display: block; background: #f4f4f4; padding: 10px; border-radius: 3px;">[
+}</code></pre
+          >
+          <p><strong>Format 3: List of objects with "name" field</strong></p>
+          <pre
+          >
+<code class="language-json" style="display: block; background: #f4f4f4; padding: 10px; border-radius: 3px;">[
   {
     "name": "gamma-processor",
     "command": "/usr/local/bin/gamma",
@@ -105,54 +128,81 @@
     "type": "sse",
     "url": "https://delta.example.com/feed"
   }
-]</code></pre>
-                     <p><strong>Note:</strong></p>
-                     <ul>
-                         <li>- Extra fields (<code>disabled</code>, <code>alwaysAllow</code>, etc.) will be ignored.</li>
-                         <li>- Commands like <code>cmd /c npx ...</code> or <code>cmd /c uvx ...</code> will be automatically converted to <code>npx ...</code> and <code>uvx ...</code> when added.</li>
-                     </ul>
-                </div>
+]</code></pre
+          >
+          <p><strong>Note:</strong></p>
+          <ul>
+            <li>
+              - Extra fields (<code>disabled</code>, <code>alwaysAllow</code>,
+              etc.) will be ignored.
             </li>
-        </ul>
+            <li>
+              - Commands like <code>cmd /c npx ...</code> or <code>cmd /c uvx
+                ...</code> will be automatically converted to <code>npx
+                ...</code> and <code>uvx ...</code> when added.
+            </li>
+          </ul>
+        </div>
+      </li>
+    </ul>
 
-        <!-- Bulk add form -->
-        <form method="post" action="{{ url_for('ui_process_bulk_add') }}">
+    <!-- Bulk add form -->
+    <form method="post" action="{{ url_for('ui_process_bulk_add') }}">
+      <!-- Buttons and enable option -->
+      <div class="row" style="margin-bottom: 25px">
+        <div class="col s12 m6 l7">
+          {# Buttons on the left #}
+          <button
+            class="btn waves-effect waves-light blue darken-1"
+            type="submit"
+          >
+            <i class="material-icons left">playlist_add</i>Add from JSON
+          </button>
+          <a
+            href="{{ url_for('ui_root') }}"
+            class="btn waves-effect waves-light grey lighten-1 black-text"
+          >
+            <i class="material-icons left">cancel</i>Cancel (to main)
+          </a>
+        </div>
+        <div class="col s12 m6 l5">
+          {# Switch on the right #}
+          <div class="switch" style="padding-top: 5px">
+            {# Small padding for alignment #}
+            <label>
+              Add as disabled
+              <input
+                type="checkbox"
+                id="default_enabled"
+                name="default_enabled"
+                value="true"
+              >
+              <span class="lever"></span>
+              Add as enabled
+            </label>
+            <span class="helper-text" style="margin-left: -15px"
+            >Will added servers be enabled immediately?</span> {# Adjusted
+            margin #}
+          </div>
+        </div>
+      </div>
 
-             <!-- Buttons and enable option -->
-             <div class="row" style="margin-bottom: 25px;">
-                <div class="col s12 m6 l7"> {# Buttons on the left #}
-                     <button class="btn waves-effect waves-light blue darken-1" type="submit">
-                         <i class="material-icons left">playlist_add</i>Add from JSON
-                     </button>
-                     <a href="{{ url_for('ui_root') }}" class="btn waves-effect waves-light grey lighten-1 black-text">
-                          <i class="material-icons left">cancel</i>Cancel (to main)
-                     </a>
-                </div>
-                <div class="col s12 m6 l5"> {# Switch on the right #}
-                    <div class="switch" style="padding-top: 5px;"> {# Small padding for alignment #}
-                        <label>
-                            Add as disabled
-                            <input type="checkbox" id="default_enabled" name="default_enabled" value="true">
-                            <span class="lever"></span>
-                            Add as enabled
-                        </label>
-                         <span class="helper-text" style="margin-left: -15px;">Will added servers be enabled immediately?</span> {# Adjusted margin #}
-                    </div>
-                </div>
-             </div>
-
-             <!-- JSON input field -->
-             <div class="row">
-                <div class="input-field col s12">
-                     <i class="material-icons prefix">data_object</i>
-                     <textarea id="configJsonStr" name="configJsonStr" class="materialize-textarea" style="height: 300px; font-family: monospace;" required placeholder='Paste your JSON here...'>{{ config_json_str if config_json_str else '' }}</textarea>
-                     <label for="configJsonStr">MCP Servers Configuration (JSON)</label>
-                </div>
-            </div>
-        </form>
-    </div>
-     <!-- ==================== End of Tab Content: Bulk Add ==================== -->
-
-</div> {# End of .row for tabs and content #}
-
-{% endblock %}
+      <!-- JSON input field -->
+      <div class="row">
+        <div class="input-field col s12">
+          <i class="material-icons prefix">data_object</i>
+          <textarea
+            id="configJsonStr"
+            name="configJsonStr"
+            class="materialize-textarea"
+            style="height: 300px; font-family: monospace"
+            required
+            placeholder="Paste your JSON here..."
+          >{{ config_json_str if config_json_str else '' }}</textarea>
+          <label for="configJsonStr">MCP Servers Configuration (JSON)</label>
+        </div>
+      </div>
+    </form>
+  </div>
+  <!-- ==================== End of Tab Content: Bulk Add ==================== -->
+</div> {# End of .row for tabs and content #} {% endblock %}

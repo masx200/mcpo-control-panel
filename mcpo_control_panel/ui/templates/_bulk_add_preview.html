@@ -3,180 +3,216 @@
 <!-- (Partial template for displaying bulk add analysis results) -->
 <!-- ================================================ -->
 
-{# Calculate counts for display #}
-{% set num_valid = analysis.valid_new | length %}
-{% set num_existing = analysis.existing | length %}
-{% set num_invalid = analysis.invalid | length %}
-{% set num_parsing_errors = parsing_errors | length %}
+{# Calculate counts for display #} {% set num_valid = analysis.valid_new |
+length %} {% set num_existing = analysis.existing | length %} {% set num_invalid
+= analysis.invalid | length %} {% set num_parsing_errors = parsing_errors |
+length %}
 
 <style>
-    /* Scoped styles for the preview partial */
-    .preview-section { margin-bottom: 15px; }
-    .preview-section h6 {
-        font-size: 1.1rem;
-        margin: 10px 0 8px 0;
-        padding-bottom: 5px;
-        border-bottom: 1px solid #e0e0e0;
-        display: flex;
-        align-items: center;
-    }
-    .preview-section h6 i.material-icons {
-        margin-right: 8px;
-        font-size: 1.2em; /* Slightly larger icon */
-        vertical-align: middle; /* Align icon */
-    }
-    .preview-list { list-style-type: none; padding-left: 5px; margin: 0; } /* Removed extra left padding */
-    .preview-list li {
-        padding: 6px 0; /* Adjusted padding */
-        border-bottom: 1px dotted #eeeeee;
-        font-size: 0.95em;
-        line-height: 1.5;
-    }
-    .preview-list li:last-child { border-bottom: none; }
-    .preview-list code {
-        background-color: rgba(0,0,0,0.07); /* Slightly darker code background */
-        padding: 1px 4px;
-        border-radius: 3px; /* More rounded corners */
-        font-size: 0.9em; /* Slightly smaller code font */
-    }
-    .preview-list .error-reason {
-        color: #c62828; /* Darker red */
-        display: block;
-        font-size: 0.9em;
-        margin-left: 20px; /* Indent error reason */
-        margin-top: 3px;
-    }
-    .preview-list .server-details {
-        font-size: 0.9em; /* Smaller details font */
-        color: #616161; /* Darker grey */
-    }
-    .preview-list .server-details span { margin-right: 10px; }
-    .preview-list .server-details i.tiny {
-        font-size: 1rem; /* Slightly larger tiny icons */
-        vertical-align: text-bottom;
-        margin-right: 2px;
-    }
+  /* Scoped styles for the preview partial */
+  .preview-section {
+    margin-bottom: 15px;
+  }
+  .preview-section h6 {
+    font-size: 1.1rem;
+    margin: 10px 0 8px 0;
+    padding-bottom: 5px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+  }
+  .preview-section h6 i.material-icons {
+    margin-right: 8px;
+    font-size: 1.2em; /* Slightly larger icon */
+    vertical-align: middle; /* Align icon */
+  }
+  .preview-list {
+    list-style-type: none;
+    padding-left: 5px;
+    margin: 0;
+  } /* Removed extra left padding */
+  .preview-list li {
+    padding: 6px 0; /* Adjusted padding */
+    border-bottom: 1px dotted #eeeeee;
+    font-size: 0.95em;
+    line-height: 1.5;
+  }
+  .preview-list li:last-child {
+    border-bottom: none;
+  }
+  .preview-list code {
+    background-color: rgba(0, 0, 0, 0.07); /* Slightly darker code background */
+    padding: 1px 4px;
+    border-radius: 3px; /* More rounded corners */
+    font-size: 0.9em; /* Slightly smaller code font */
+  }
+  .preview-list .error-reason {
+    color: #c62828; /* Darker red */
+    display: block;
+    font-size: 0.9em;
+    margin-left: 20px; /* Indent error reason */
+    margin-top: 3px;
+  }
+  .preview-list .server-details {
+    font-size: 0.9em; /* Smaller details font */
+    color: #616161; /* Darker grey */
+  }
+  .preview-list .server-details span {
+    margin-right: 10px;
+  }
+  .preview-list .server-details i.tiny {
+    font-size: 1rem; /* Slightly larger tiny icons */
+    vertical-align: text-bottom;
+    margin-right: 2px;
+  }
 
-    .parsing-errors { margin-top: 15px; }
-    .parsing-errors .card-panel { padding: 10px 15px; margin-bottom: 10px; } /* Adjusted padding */
+  .parsing-errors {
+    margin-top: 15px;
+  }
+  .parsing-errors .card-panel {
+    padding: 10px 15px;
+    margin-bottom: 10px;
+  } /* Adjusted padding */
 
-    .confirmation-section {
-        margin-top: 25px;
-        padding-top: 15px;
-        border-top: 1px solid #bdbdbd;
-    }
-    .confirmation-section .btn {
-        margin-right: 10px; /* Space after button */
-    }
-    .confirmation-section .confirmation-note {
-         margin-left: 15px;
-         font-size: 0.9em;
-         color: #757575; /* Grey */
-    }
-
+  .confirmation-section {
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 1px solid #bdbdbd;
+  }
+  .confirmation-section .btn {
+    margin-right: 10px; /* Space after button */
+  }
+  .confirmation-section .confirmation-note {
+    margin-left: 15px;
+    font-size: 0.9em;
+    color: #757575; /* Grey */
+  }
 </style>
 
-{# --- Display Parsing Errors First (if any) --- #}
-{% if parsing_errors %}
+{# --- Display Parsing Errors First (if any) --- #} {% if parsing_errors %}
 <div class="parsing-errors">
-    <h6><i class="material-icons red-text text-darken-2">warning</i>JSON Parsing/Extraction Errors:</h6>
-    {% for error in parsing_errors %}
-    <div class="card-panel red lighten-4 red-text text-darken-4">
-        <i class="material-icons left tiny">error_outline</i>{{ error }}
-    </div>
+  <h6>
+    <i class="material-icons red-text text-darken-2">warning</i>JSON
+    Parsing/Extraction Errors:
+  </h6>
+  {% for error in parsing_errors %}
+  <div class="card-panel red lighten-4 red-text text-darken-4">
+    <i class="material-icons left tiny">error_outline</i>{{ error }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %} {# --- Section: Valid New Servers --- #} {% if num_valid > 0 %}
+<div class="preview-section">
+  <h6 class="green-text text-darken-2">
+    <i class="material-icons">check_circle</i>Ready to Add ({{ num_valid }})
+  </h6>
+  <ul class="preview-list">
+    {% for server in analysis.valid_new %}
+    <li>
+      <strong>{{ server.name }}</strong>
+      <div class="server-details">
+        <span><i class="material-icons tiny">settings_ethernet</i>Type: <code>{{
+            server.server_type }}</code></span>
+        {% if server.server_type == 'stdio' %}
+        <span><i class="material-icons tiny">terminal</i>Cmd: <code>{{
+            server.command | truncate(35) }}</code></span>
+        <span><i class="material-icons tiny">list</i>Args: <code>{{ server.args
+            | length }}</code></span>
+        <span><i class="material-icons tiny">subtitles</i>Env: <code>{{
+            server.env_vars | length }}</code></span>
+        {% else %}
+        <span><i class="material-icons tiny">link</i>URL: <code>{{ server.url |
+            truncate(45) }}</code></span>
+        {% endif %}
+        <span><i class="material-icons tiny"
+          >{% if server.is_enabled %}toggle_on{% else %}toggle_off{% endif %}</i
+          >Enabled: <code>{{ 'Yes' if server.is_enabled else 'No' }}</code
+          ></span>
+      </div>
+    </li>
     {% endfor %}
+  </ul>
 </div>
-{% endif %}
-
-
-{# --- Section: Valid New Servers --- #}
-{% if num_valid > 0 %}
+{% endif %} {# --- Section: Existing Servers --- #} {% if num_existing > 0 %}
 <div class="preview-section">
-    <h6 class="green-text text-darken-2"><i class="material-icons">check_circle</i>Ready to Add ({{ num_valid }})</h6>
-    <ul class="preview-list">
-        {% for server in analysis.valid_new %}
-        <li>
-            <strong>{{ server.name }}</strong>
-            <div class="server-details">
-                 <span><i class="material-icons tiny">settings_ethernet</i>Type: <code>{{ server.server_type }}</code></span>
-                 {% if server.server_type == 'stdio' %}
-                    <span><i class="material-icons tiny">terminal</i>Cmd: <code>{{ server.command | truncate(35) }}</code></span>
-                    <span><i class="material-icons tiny">list</i>Args: <code>{{ server.args | length }}</code></span>
-                    <span><i class="material-icons tiny">subtitles</i>Env: <code>{{ server.env_vars | length }}</code></span>
-                 {% else %}
-                     <span><i class="material-icons tiny">link</i>URL: <code>{{ server.url | truncate(45) }}</code></span>
-                 {% endif %}
-                 <span><i class="material-icons tiny">{% if server.is_enabled %}toggle_on{% else %}toggle_off{% endif %}</i>Enabled: <code>{{ 'Yes' if server.is_enabled else 'No' }}</code></span>
-            </div>
-        </li>
-        {% endfor %}
-    </ul>
+  <h6 class="orange-text text-darken-2">
+    <i class="material-icons">info</i>Already Exist ({{ num_existing }}) - Will
+    be ignored
+  </h6>
+  <ul class="preview-list grey-text text-darken-1">
+    {% for name in analysis.existing %}
+    <li>{{ name }}</li>
+    {% endfor %}
+  </ul>
 </div>
-{% endif %}
-
-{# --- Section: Existing Servers --- #}
-{% if num_existing > 0 %}
+{% endif %} {# --- Section: Invalid Servers --- #} {% if num_invalid > 0 %}
 <div class="preview-section">
-    <h6 class="orange-text text-darken-2"><i class="material-icons">info</i>Already Exist ({{ num_existing }}) - Will be ignored</h6>
-    <ul class="preview-list grey-text text-darken-1">
-        {% for name in analysis.existing %}
-        <li>{{ name }}</li>
-        {% endfor %}
-    </ul>
+  <h6 class="red-text text-darken-2">
+    <i class="material-icons">error</i>Invalid Entries ({{ num_invalid }}) -
+    Cannot be added
+  </h6>
+  <ul class="preview-list">
+    {% for item in analysis.invalid %}
+    <li>
+      <strong>{{ item.name if item.name else 'Unnamed Entry' }}</strong>
+      <span class="error-reason"><i class="material-icons tiny left"
+        >arrow_right</i>{{ item.error }}</span>
+      {# Optionally display item.data here if needed for debugging
+      <pre
+        style="font-size: 0.8em; margin-left: 20px"
+      ><code>{{ item.data | tojson(indent=2) }}</code></pre>
+      #}
+    </li>
+    {% endfor %}
+  </ul>
 </div>
-{% endif %}
-
-{# --- Section: Invalid Servers --- #}
-{% if num_invalid > 0 %}
-<div class="preview-section">
-    <h6 class="red-text text-darken-2"><i class="material-icons">error</i>Invalid Entries ({{ num_invalid }}) - Cannot be added</h6>
-    <ul class="preview-list">
-        {% for item in analysis.invalid %}
-        <li>
-            <strong>{{ item.name if item.name else 'Unnamed Entry' }}</strong>
-            <span class="error-reason"><i class="material-icons tiny left">arrow_right</i>{{ item.error }}</span>
-            {# Optionally display item.data here if needed for debugging
-            <pre style="font-size: 0.8em; margin-left: 20px;"><code>{{ item.data | tojson(indent=2) }}</code></pre>
-            #}
-        </li>
-        {% endfor %}
-    </ul>
-</div>
-{% endif %}
-
-{# --- Summary and Confirmation Form --- #}
+{% endif %} {# --- Summary and Confirmation Form --- #}
 <div class="confirmation-section">
-    {% if num_valid > 0 %}
-        <p class="green-text text-darken-3" style="margin-bottom: 15px;">
-            <i class="material-icons left tiny">playlist_add_check</i>Ready to add <strong>{{ num_valid }}</strong> new server definition(s). Review the lists above.
-        </p>
-        {# Form to confirm and actually add the servers #}
-        <form id="bulk-confirm-form" method="post" action="{{ confirm_action_url }}">
-            {# Hidden input containing the JSON string of valid server data #}
-            <input type="hidden" name="valid_new_servers_json" value="{{ serialized_valid_servers | e }}">
+  {% if num_valid > 0 %}
+  <p class="green-text text-darken-3" style="margin-bottom: 15px">
+    <i class="material-icons left tiny">playlist_add_check</i>Ready to add
+    <strong>{{ num_valid }}</strong> new server definition(s). Review the lists
+    above.
+  </p>
+  {# Form to confirm and actually add the servers #}
+  <form id="bulk-confirm-form" method="post" action="{{ confirm_action_url }}">
+    {# Hidden input containing the JSON string of valid server data #}
+    <input
+      type="hidden"
+      name="valid_new_servers_json"
+      value="{{ serialized_valid_servers | e }}"
+    >
 
-            <button class="btn waves-effect waves-light green darken-2" type="submit">
-                <i class="material-icons left">check</i>Confirm and Add {{ num_valid }} Server(s)
-            </button>
-            <span class="confirmation-note">
-                (Existing and invalid entries shown above will be ignored)
-            </span>
-        </form>
-    {% elif not parsing_errors %} {# Show message only if no parsing errors prevented analysis #}
-        <p class="orange-text text-darken-3">
-            <i class="material-icons left tiny">info_outline</i>No valid new server definitions found to add. Check the 'Already Exist' or 'Invalid Entries' lists above, or verify your input JSON format.
-        </p>
-    {% else %}
-         <p class="red-text text-darken-3">
-            <i class="material-icons left tiny">error</i>Cannot proceed due to JSON parsing/extraction errors listed above. Please fix the JSON and analyze again.
-        </p>
-    {% endif %}
+    <button class="btn waves-effect waves-light green darken-2" type="submit">
+      <i class="material-icons left">check</i>Confirm and Add {{ num_valid }}
+      Server(s)
+    </button>
+    <span class="confirmation-note">
+      (Existing and invalid entries shown above will be ignored)
+    </span>
+  </form>
+  {% elif not parsing_errors %} {# Show message only if no parsing errors
+  prevented analysis #}
+  <p class="orange-text text-darken-3">
+    <i class="material-icons left tiny">info_outline</i>No valid new server
+    definitions found to add. Check the 'Already Exist' or 'Invalid Entries'
+    lists above, or verify your input JSON format.
+  </p>
+  {% else %}
+  <p class="red-text text-darken-3">
+    <i class="material-icons left tiny">error</i>Cannot proceed due to JSON
+    parsing/extraction errors listed above. Please fix the JSON and analyze
+    again.
+  </p>
+  {% endif %}
 </div>
 
 {# Initialize tooltips within the loaded partial #}
 <script>
-    (function() {
-        var tooltips = document.querySelectorAll('#bulk-preview-area .tooltipped');
-        M.Tooltip.init(tooltips);
-    })();
+  (function () {
+    var tooltips = document.querySelectorAll(
+      "#bulk-preview-area .tooltipped",
+    );
+    M.Tooltip.init(tooltips);
+  })();
 </script>

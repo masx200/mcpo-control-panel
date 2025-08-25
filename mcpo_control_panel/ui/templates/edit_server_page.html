@@ -1,36 +1,27 @@
 <!-- ================================================ -->
 <!-- FILE: mcpo_control_panel/ui/templates/edit_server_page.html -->
 <!-- ================================================ -->
-{% extends "base.html" %}
-
-{# Import the macro #}
-{% from "_server_form_macro.html" import render_server_form %}
-
-{% block title %}Edit Server - MCP Manager{% endblock %}
-{% block page_title %}{{ form_title | default('Edit Server Definition') }}{% endblock %}
-{% block page_subtitle %}Modify server parameters{% endblock %}
-
-{% block content %}
-
-{% if error and not server_data %}
-<div class="card-panel red lighten-4 red-text text-darken-4" style="padding: 10px;">
-     <i class="material-icons left tiny">error_outline</i><strong>Error:</strong> {{ error }}
+{% extends "base.html" %} {# Import the macro #} {% from
+"_server_form_macro.html" import render_server_form %} {% block title %}Edit
+Server - MCP Manager{% endblock %} {% block page_title %}{{ form_title |
+default('Edit Server Definition') }}{% endblock %} {% block page_subtitle
+%}Modify server parameters{% endblock %} {% block content %} {% if error and not
+server_data %}
+<div
+  class="card-panel red lighten-4 red-text text-darken-4"
+  style="padding: 10px"
+>
+  <i class="material-icons left tiny">error_outline</i>
+  <strong>Error:</strong> {{ error }}
 </div>
 {% endif %}
 
 <div class="row">
-    <div class="col s12">
-        {{ render_server_form(
-                action_url=action_url,
-                submit_button_text=submit_button_text,
-                server=server_data,
-                error=error,
-                is_add_form=is_add_form,
-                request=request,
-                cancel_url=url_for('ui_root')
-           )
-        }}
-    </div>
+  <div class="col s12">
+    {{ render_server_form( action_url=action_url,
+    submit_button_text=submit_button_text, server=server_data, error=error,
+    is_add_form=is_add_form, request=request, cancel_url=url_for('ui_root') ) }}
+  </div>
 </div>
 
 {% endblock %}

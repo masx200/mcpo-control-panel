@@ -25,7 +25,8 @@ main {
 .htmx-request .htmx-indicator.preloader-wrapper {
   opacity: 1;
 }
-.htmx-request.htmx-indicator.preloader-wrapper { /* For elements that are indicators themselves */
+.htmx-request.htmx-indicator.preloader-wrapper {
+  /* For elements that are indicators themselves */
   opacity: 1;
 }
 
@@ -53,7 +54,7 @@ main {
 .card .card-content .collapsible-header {
   font-weight: 500;
   padding: 0.75rem;
-  background-color: rgba(0,0,0,0.03); /* Slightly darker header background */
+  background-color: rgba(0, 0, 0, 0.03); /* Slightly darker header background */
 }
 .card .card-content .collapsible-body {
   padding: 1rem;
@@ -80,10 +81,10 @@ pre.log-container {
   border-radius: 4px;
   max-height: 60vh; /* Limit height to avoid taking up the entire screen */
   overflow-y: auto; /* Enable vertical scrolling */
-  font-family: 'Courier New', Courier, monospace; /* Monospace font */
+  font-family: "Courier New", Courier, monospace; /* Monospace font */
   font-size: 0.9em; /* Slightly smaller font */
-  white-space: pre-wrap;   /* Preserves spaces/line breaks but wraps long lines */
-  word-break: break-all;   /* Forces very long words without spaces to break */
+  white-space: pre-wrap; /* Preserves spaces/line breaks but wraps long lines */
+  word-break: break-all; /* Forces very long words without spaces to break */
   border: 1px solid #37474f; /* Slightly lighter border (Blue Grey Darken 3) */
 }
 
