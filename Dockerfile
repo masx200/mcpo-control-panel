@@ -1,5 +1,5 @@
 # Use Python 3.11 as base image
-FROM python:3.11-slim
+FROM docker.cnb.cool/masx200/docker_mirror/mcpo-docker:2025-08-23-17-10-51
 
 # Install Node.js 22.x
 RUN apt-get update && apt-get install -y curl gnupg && \
